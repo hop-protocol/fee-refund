@@ -19,8 +19,8 @@ async function main (db: Level) {
       const gasUsed = tx.gasUsed.toString()
       const gasPrice = tx.effectiveGasPrice.toString()
       const isAggregator = aggregatorAddresses[tx.to.toLowerCase()] || false
-    
-      const entry = Object.assign({gasUsed, gasPrice, isAggregator}, transfer)
+
+      const entry = Object.assign({ gasUsed, gasPrice, isAggregator }, transfer)
       entries.push(entry)
     }
 
@@ -28,7 +28,7 @@ async function main (db: Level) {
   }
 }
 
-async function getProviders(): Promise<Record<string, any>> {
+async function getProviders (): Promise<Record<string, any>> {
   const initializedProviders: Record<string, any> = {}
   for (const chain of chains) {
     initializedProviders[chain] = new providers.JsonRpcProvider(rpcUrls[chain])

@@ -6,7 +6,7 @@ export interface DbEntry {
   token: string
   bonderFee: string
   chain: string
-  gasUsed?: string 
-  gasPrice?: string 
+  gasUsed?: string
+  gasPrice?: string
   isAggregator?: boolean
 }

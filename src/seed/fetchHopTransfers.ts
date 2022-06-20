@@ -31,8 +31,7 @@ async function fetchHopTransfers (db: any, token: string, chain: string) {
     if (!data || data.length === 0) break
     lastId = data[data.length - 1].id
 
-  
-    for (let entry of data) {
+    for (const entry of data) {
       const address = entry.from
       const key = `address::${address}`
 

@@ -36,7 +36,7 @@ export const tokenDecimals: {[key: string]: number} = {
   MATIC: 18,
   WBTC: 8,
   FRAX: 18,
-  OP: 18,
+  OP: 18
 }
 
 export const tokens: string[] = [
@@ -53,5 +53,5 @@ export const chainIds: Record<string, number> = {
 
 export const aggregatorAddresses: Record<string, boolean> = {
   '0xc30141b657f4216252dc59af2e7cdb9d8792e1b0': true, // socket registry
-  '0x362fa9d0bca5d19f743db50738345ce2b40ec99f': true, // li fi
+  '0x362fa9d0bca5d19f743db50738345ce2b40ec99f': true // li fi
 }

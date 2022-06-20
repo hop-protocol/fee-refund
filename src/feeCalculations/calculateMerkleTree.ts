@@ -2,11 +2,10 @@ import Level from 'level-ts'
 import { BigNumber, utils } from 'ethers'
 import { DbEntry } from '../interfaces'
 import { getTokenPrice } from './fetchTokenPrices'
-const { ShardedMerkleTree } = require('../merkle')
 import { nativeTokens, tokenDecimals } from '../constants'
+const { ShardedMerkleTree } = require('../merkle')
 
 const { formatUnits, parseUnits } = utils
-
 
 async function main (db: Level) {
   const merkleEntries: Record<string, BigNumber> = {}
@@ -41,7 +40,7 @@ async function main (db: Level) {
   makeTree(merkleEntries)
 }
 
-async function getUsdCost(db: Level, transfer: DbEntry): Promise<number> {
+async function getUsdCost (db: Level, transfer: DbEntry): Promise<number> {
   // Source tx fee
   const gasUsed = BigNumber.from(transfer.gasUsed!)
   const gasPrice = BigNumber.from(transfer.gasPrice!)
@@ -97,8 +96,7 @@ async function getFeeInUsd (
 }
 
 function makeTree (merkleEntries: Record<string, BigNumber>) {
-  let entries: any[] = []
-
+  const entries: any[] = []
   for (const address in merkleEntries) {
     const amount = merkleEntries[address].toString()
     const entry = [address, { balance: amount }]
@@ -106,7 +104,7 @@ function makeTree (merkleEntries: Record<string, BigNumber>) {
   }
 
   const shardNybbles = 2
-  ShardedMerkleTree.build(entries, shardNybbles, `tree/`)
+  ShardedMerkleTree.build(entries, shardNybbles, 'tree/')
 }
 
 export default main
