@@ -1,6 +1,7 @@
 import Level from 'level-ts'
 import fs from 'fs'
 import fse from 'fs-extra'
+import fetchExistingClaims from './fetchExistingClaims'
 import fetchHopTransfers from './fetchHopTransfers'
 import fetchOnChainData from './fetchOnChainData'
 import { seedDbDir } from '../constants'
@@ -20,7 +21,7 @@ async function seed () {
   console.log(' - Done')
 
   console.log('Fetching existing claims...')
-  // TODO
+  await fetchExistingClaims(db)
   console.log(' - Done')
 
   console.log('==== Successfully Seeded Db ====')

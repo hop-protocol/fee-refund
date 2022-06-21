@@ -25,11 +25,13 @@ async function main (db: Level) {
     for (const transfer of transfers) {
       if (transfer.isAggregator) continue
 
+      // Calculate total amount
       const totalUsdCost = await getUsdCost(db, transfer)
       const symbol = refundTokenSymbol
       const price = await getTokenPrice(db, symbol, Number(transfer.timestamp))
       const refundAmount = totalUsdCost / price
 
+      // Apply refund discount
       const decimals = tokenDecimals[symbol]
       const refundAmountAfterDiscount = refundAmount * refundPercentage
       const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
@@ -38,6 +40,12 @@ async function main (db: Level) {
         merkleEntries[address] = BigNumber.from('0')
       }
       merkleEntries[address] = merkleEntries[address].add(refundAmountAfterDiscountWei)
+    }
+
+    // Remove already claimed amount
+    if (merkleEntries[address]) {
+      merkleEntries[address] = merkleEntries[address].sub(value.claimAmount)
+
     }
   }
 
