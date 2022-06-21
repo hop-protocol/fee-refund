@@ -1,8 +1,15 @@
 import Level from 'level-ts'
 import { BigNumber, utils } from 'ethers'
-import { DbEntry } from '../interfaces'
+import { DbEntry, Transfer } from '../interfaces'
 import { getTokenPrice } from './fetchTokenPrices'
-import { nativeTokens, tokenDecimals } from '../constants'
+import {
+  refundPercentage,
+  refundTokenSymbol
+} from '../config'
+import {
+  nativeTokens,
+  tokenDecimals
+} from '../constants'
 const { ShardedMerkleTree } = require('../merkle')
 
 const { formatUnits, parseUnits } = utils
@@ -12,22 +19,19 @@ async function main (db: Level) {
 
   const iterator = db.iterate({ all: 'address::', keys: true })
   for await (const { key, value } of iterator) {
-    const address = key.slice(9)
-    const transfers: DbEntry[] = value
+    const dbEntry: DbEntry = value
+    const address = dbEntry.address
+    const transfers: Transfer[] = dbEntry.transfers
     for (const transfer of transfers) {
       if (transfer.isAggregator) continue
 
-      // USD value
       const totalUsdCost = await getUsdCost(db, transfer)
-
-      // OP value
-      const symbol = 'OP'
+      const symbol = refundTokenSymbol
       const price = await getTokenPrice(db, symbol, Number(transfer.timestamp))
       const refundAmount = totalUsdCost / price
 
       const decimals = tokenDecimals[symbol]
-      const discount = 0.8
-      const refundAmountAfterDiscount = refundAmount * discount
+      const refundAmountAfterDiscount = refundAmount * refundPercentage
       const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
 
       if (!merkleEntries[address]) {
@@ -40,7 +44,7 @@ async function main (db: Level) {
   makeTree(merkleEntries)
 }
 
-async function getUsdCost (db: Level, transfer: DbEntry): Promise<number> {
+async function getUsdCost (db: Level, transfer: Transfer): Promise<number> {
   // Source tx fee
   const gasUsed = BigNumber.from(transfer.gasUsed!)
   const gasPrice = BigNumber.from(transfer.gasPrice!)

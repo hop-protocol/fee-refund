@@ -1,3 +1,4 @@
+require('dotenv').config()
 import path from 'path'
 
 export const seedDbDir = path.resolve(__dirname, '../dbs/seedDb')
@@ -28,6 +29,13 @@ export const nativeTokens: {[key: string]: string} = {
   gnosis: 'DAI'
 }
 
+export const tokenSymbols: {[key: string]: string} = {
+  ethereum: 'ETH',
+  matic: 'MATIC',
+  dai: 'DAI',
+  optimism: 'OP'
+}
+
 export const tokenDecimals: {[key: string]: number} = {
   ETH: 18,
   USDC: 6,
@@ -54,4 +62,12 @@ export const chainIds: Record<string, number> = {
 export const aggregatorAddresses: Record<string, boolean> = {
   '0xc30141b657f4216252dc59af2e7cdb9d8792e1b0': true, // socket registry
   '0x362fa9d0bca5d19f743db50738345ce2b40ec99f': true // li fi
+}
+
+export const rpcUrls: Record<string, string> = {
+  mainnet: process.env.MAINNET_RPC_URL!,
+  polygon: process.env.POLYGON_RPC_URL!,
+  gnosis: process.env.GNOSIS_RPC_URL!,
+  arbitrum: process.env.ARBITRUM_RPC_URL!,
+  optimism: process.env.OPTIMISM_RPC_URL!
 }

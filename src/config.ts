@@ -1,11 +1,11 @@
-require('dotenv').config()
+import {
+  chainIds,
+  chainSlugs,
+  tokenSymbols
+} from './constants'
 
-export const startTimestamp = 1655630195
-
-export const rpcUrls: Record<string, string> = {
-  mainnet: process.env.MAINNET_RPC_URL!,
-  polygon: process.env.POLYGON_RPC_URL!,
-  gnosis: process.env.GNOSIS_RPC_URL!,
-  arbitrum: process.env.ARBITRUM_RPC_URL!,
-  optimism: process.env.OPTIMISM_RPC_URL!
-}
+export const startTimestamp = 1655761679
+export const refundPercentage = 0.8
+export const refundChain = chainSlugs.optimism
+export const refundTokenSymbol = tokenSymbols[refundChain]
+export const refundChainId = chainIds[refundChain]

@@ -1,5 +1,4 @@
-export interface DbEntry {
-  address: string
+export interface Transfer {
   hash: string
   timestamp: string
   amount: string
@@ -9,4 +8,11 @@ export interface DbEntry {
   gasUsed?: string
   gasPrice?: string
   isAggregator?: boolean
+  claimedAmount?: string
+}
+
+export interface DbEntry {
+  address: string
+  claimAmount: string
+  transfers: Transfer[]
 }

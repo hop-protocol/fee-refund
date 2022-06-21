@@ -4,16 +4,16 @@ import {
   aggregatorAddresses,
   chains
 } from '../constants'
-import { DbEntry } from '../interfaces'
-import { rpcUrls } from '../config'
+import { DbEntry, Transfer } from '../interfaces'
+import { rpcUrls } from '../constants'
 
 async function main (db: Level) {
   const initializedProviders = await getProviders()
   const iterator = db.iterate({ all: 'address::', keys: true })
   for await (const { key, value } of iterator) {
-    const entries: DbEntry[] = []
+    const allTransfers: Transfer[] = []
 
-    const transfers: DbEntry[] = value
+    const transfers: Transfer[] = value.transfers
     for (const transfer of transfers) {
       const tx = await initializedProviders[transfer.chain].getTransactionReceipt(transfer.hash)
       const gasUsed = tx.gasUsed.toString()
@@ -21,10 +21,16 @@ async function main (db: Level) {
       const isAggregator = aggregatorAddresses[tx.to.toLowerCase()] || false
 
       const entry = Object.assign({ gasUsed, gasPrice, isAggregator }, transfer)
-      entries.push(entry)
+      allTransfers.push(entry)
     }
 
-    await db.put(key, entries)
+    const dbEntry: DbEntry = {
+      address: value.address,
+      claimAmount: value.claimAmount,
+      transfers: allTransfers
+    }
+    
+    await db.put(key, dbEntry)
   }
 }
 

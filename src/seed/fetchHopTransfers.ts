@@ -7,12 +7,13 @@ import {
   chains,
   tokens
 } from '../constants'
-import { startTimestamp } from '../config'
+import {
+  refundChainId,
+  startTimestamp
+} from '../config'
 import { DbEntry } from '../interfaces'
 
 async function main (db: Level) {
-  console.time('runtime')
-
   await Promise.all(tokens.map(async (token) => {
     for (const chain of chains) {
       await fetchHopTransfers(db, token, chain)
@@ -20,7 +21,6 @@ async function main (db: Level) {
   }))
 
   console.log('==== Successfully Fetched Hop Transfers ====')
-  console.timeEnd('runtime')
 }
 
 async function fetchHopTransfers (db: any, token: string, chain: string) {
@@ -35,9 +35,9 @@ async function fetchHopTransfers (db: any, token: string, chain: string) {
       const address = entry.from
       const key = `address::${address}`
 
-      const dbEntry: DbEntry[] = await getDbEntry(db, key)
-      dbEntry.push({
-        address,
+      const dbEntry: DbEntry = await getDbEntry(db, key)
+      dbEntry.address = address
+      dbEntry.transfers.push({
         hash: entry.transactionHash,
         timestamp: entry.timestamp,
         amount: entry.amount,
@@ -61,7 +61,7 @@ async function fetchHopTransferBatch (token: string, chain: string, lastId: stri
           first: $pageSize,
           where: {
             token: $token,
-            destinationChainId: ${chainIds.optimism}
+            destinationChainId: ${refundChainId}
             id_gt: $lastId,
             timestamp_gte: $startTimestamp
           },
@@ -84,7 +84,7 @@ async function fetchHopTransferBatch (token: string, chain: string, lastId: stri
           first: $pageSize,
           where: {
             token: $token,
-            destinationChainId: ${chainIds.optimism}
+            destinationChainId: ${refundChainId}
             id_gt: $lastId,
             timestamp_gte: $startTimestamp
           },
@@ -117,11 +117,15 @@ async function fetchHopTransferBatch (token: string, chain: string, lastId: stri
   return data ? data.transfers : []
 }
 
-async function getDbEntry (db: Level, index: string): Promise<DbEntry[]> {
+async function getDbEntry (db: Level, index: string): Promise<DbEntry> {
   try {
     return await db.get(index)
   } catch {
-    return []
+    return {
+      address: '',
+      claimAmount: '0',
+      transfers: []
+    }
   }
 }
 
