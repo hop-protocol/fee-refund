@@ -44,8 +44,7 @@ async function main (db: Level) {
 
     // Remove already claimed amount
     if (merkleEntries[address]) {
-      merkleEntries[address] = merkleEntries[address].sub(value.claimAmount)
-
+      merkleEntries[address] = merkleEntries[address].sub(value.amountClaimed)
     }
   }
 

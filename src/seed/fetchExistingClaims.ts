@@ -25,9 +25,9 @@ async function main (db: Level) {
       const key = `address::${address}`
       const dbEntry: DbEntry = await await db.get(key)
 
-      const totalClaimAmount = BigNumber.from(dbEntry.claimAmount).add(entry.amount)
-      dbEntry.claimAmount = totalClaimAmount.toString()
-      await db.put(key,dbEntry)
+      const totalAmountClaimed = BigNumber.from(dbEntry.amountClaimed).add(entry.amount)
+      dbEntry.amountClaimed = totalAmountClaimed.toString()
+      await db.put(key, dbEntry)
     }
   }
 

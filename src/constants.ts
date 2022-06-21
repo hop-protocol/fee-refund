@@ -1,5 +1,5 @@
-require('dotenv').config()
 import path from 'path'
+require('dotenv').config()
 
 export const seedDbDir = path.resolve(__dirname, '../dbs/seedDb')
 

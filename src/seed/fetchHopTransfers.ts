@@ -123,7 +123,7 @@ async function getDbEntry (db: Level, index: string): Promise<DbEntry> {
   } catch {
     return {
       address: '',
-      claimAmount: '0',
+      amountClaimed: '0',
       transfers: []
     }
   }

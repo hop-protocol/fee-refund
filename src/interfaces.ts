@@ -13,6 +13,6 @@ export interface Transfer {
 
 export interface DbEntry {
   address: string
-  claimAmount: string
+  amountClaimed: string
   transfers: Transfer[]
 }

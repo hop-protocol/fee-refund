@@ -2,10 +2,10 @@ import Level from 'level-ts'
 import { providers } from 'ethers'
 import {
   aggregatorAddresses,
-  chains
+  chains,
+  rpcUrls
 } from '../constants'
 import { DbEntry, Transfer } from '../interfaces'
-import { rpcUrls } from '../constants'
 
 async function main (db: Level) {
   const initializedProviders = await getProviders()
@@ -26,10 +26,10 @@ async function main (db: Level) {
 
     const dbEntry: DbEntry = {
       address: value.address,
-      claimAmount: value.claimAmount,
+      amountClaimed: value.amountClaimed,
       transfers: allTransfers
     }
-    
+
     await db.put(key, dbEntry)
   }
 }
