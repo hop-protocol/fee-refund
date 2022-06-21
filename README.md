@@ -1,21 +1,30 @@
-# OP Fee Refund
-A tool to calculate the amount of OP to refund to users.
+# Fee Refund
+A tool to calculate the amount of tokens to refund to users.
 
 ## Getting Started
-Create a `.env` file based on `.env-sample`
 
-## Commands
+Seed data and calculate rewards
 
-Seed DB
+## Development
 
-```shell
-npm run seed
+Running the entire
+```
+const feeRefund = new FeeRefund(
+  dbDir,
+  rpcUrls,
+  startTimestamp,
+  refundPercentage,
+  refundChain
+)
+
+await feeRefund.seed()
+await feeRefund.calculateFees()
 ```
 
-Calculate fees
+## Test
 
 ```shell
-npm run calculate-fees
+npx jest
 ```
 
 ## Lint

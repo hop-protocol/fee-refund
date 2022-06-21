@@ -7,26 +7,20 @@ import {
   chains,
   tokens
 } from '../constants'
-import {
-  refundChainId,
-  startTimestamp
-} from '../config'
 import { DbEntry } from '../interfaces'
 
-async function main (db: Level) {
+async function main (db: Level, refundChainId: number, startTimestamp: number) {
   await Promise.all(tokens.map(async (token) => {
     for (const chain of chains) {
-      await fetchHopTransfers(db, token, chain)
+      await fetchHopTransfers(db, token, chain, refundChainId, startTimestamp)
     }
   }))
-
-  console.log('==== Successfully Fetched Hop Transfers ====')
 }
 
-async function fetchHopTransfers (db: any, token: string, chain: string) {
+async function fetchHopTransfers (db: any, token: string, chain: string, refundChainId: number, startTimestamp: number) {
   let lastId = '0'
   while (true) {
-    const data: any[] = await fetchHopTransferBatch(token, chain, lastId)
+    const data: any[] = await fetchHopTransferBatch(token, chain, lastId, refundChainId, startTimestamp)
 
     if (!data || data.length === 0) break
     lastId = data[data.length - 1].id
@@ -51,7 +45,13 @@ async function fetchHopTransfers (db: any, token: string, chain: string) {
   }
 }
 
-async function fetchHopTransferBatch (token: string, chain: string, lastId: string) {
+async function fetchHopTransferBatch (
+  token: string,
+  chain: string,
+  lastId: string,
+  refundChainId: number,
+  startTimestamp: number
+) {
   let query
 
   if (chain === 'mainnet') {

@@ -5,17 +5,12 @@ import queryFetch from '../utils/queryFetch'
 import {
   PAGE_SIZE
 } from '../constants'
-import {
-  refundChain,
-  refundChainId,
-  startTimestamp
-} from '../config'
 import { DbEntry } from '../interfaces'
 
-async function main (db: Level) {
+async function main (db: Level, refundChain: string, startTimestamp: number) {
   let lastId = '0'
   while (true) {
-    const data: any[] = await fetchExistingClaimsBatch(lastId)
+    const data: any[] = await fetchExistingClaimsBatch(lastId, refundChain, startTimestamp)
 
     if (!data || data.length === 0) break
     lastId = data[data.length - 1].id
@@ -30,11 +25,9 @@ async function main (db: Level) {
       await db.put(key, dbEntry)
     }
   }
-
-  console.log('==== Successfully Fetched Existing Claims ====')
 }
 
-async function fetchExistingClaimsBatch (lastId: string) {
+async function fetchExistingClaimsBatch (lastId: string, refundChain: string, startTimestamp: number) {
   // TODO
   const query = `
   `

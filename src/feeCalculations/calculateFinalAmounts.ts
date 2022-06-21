@@ -3,23 +3,21 @@ import { BigNumber, utils } from 'ethers'
 import { DbEntry, FinalEntries, Transfer } from '../interfaces'
 import { getTokenPrice } from './fetchTokenPrices'
 import {
-  refundPercentage,
-  refundTokenSymbol
-} from '../config'
-import {
   nativeTokens,
   tokenDecimals
 } from '../constants'
 
 const { formatUnits, parseUnits } = utils
 
-async function main (db: Level): Promise<FinalEntries> {
+async function main (db: Level, refundPercentage: number, refundTokenSymbol: string): Promise<FinalEntries> {
   const finalEntries: FinalEntries = {}
   const iterator = db.iterate({ all: 'address::', keys: true })
   for await (const { key, value } of iterator) {
     const dbEntry: DbEntry = value
     const address = dbEntry.address
     const transfers: Transfer[] = dbEntry.transfers
+
+    let amount: BigNumber = BigNumber.from('0')
     for (const transfer of transfers) {
       if (transfer.isAggregator) continue
 
@@ -34,15 +32,12 @@ async function main (db: Level): Promise<FinalEntries> {
       const refundAmountAfterDiscount = refundAmount * refundPercentage
       const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
 
-      if (!finalEntries[address]) {
-        finalEntries[address] = BigNumber.from('0')
-      }
-      finalEntries[address] = finalEntries[address].add(refundAmountAfterDiscountWei)
+      amount = amount.add(refundAmountAfterDiscountWei)
     }
 
-    // Remove already claimed amount
-    if (finalEntries[address]) {
-      finalEntries[address] = finalEntries[address].sub(value.amountClaimed)
+    if (amount.toString() !== '0') {
+      amount = amount.sub(value.amountClaimed)
+      finalEntries[address] = amount.toString()
     }
   }
 

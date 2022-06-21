@@ -2,13 +2,12 @@ import Level from 'level-ts'
 import { providers } from 'ethers'
 import {
   aggregatorAddresses,
-  chains,
-  rpcUrls
+  chains
 } from '../constants'
-import { DbEntry, Transfer } from '../interfaces'
+import { DbEntry, RpcUrls, Transfer } from '../interfaces'
 
-async function main (db: Level) {
-  const initializedProviders = await getProviders()
+async function main (db: Level, rpcUrls: RpcUrls) {
+  const initializedProviders = await getProviders(rpcUrls)
   const iterator = db.iterate({ all: 'address::', keys: true })
   for await (const { key, value } of iterator) {
     const allTransfers: Transfer[] = []
@@ -34,7 +33,7 @@ async function main (db: Level) {
   }
 }
 
-async function getProviders (): Promise<Record<string, any>> {
+async function getProviders (rpcUrls: RpcUrls): Promise<Record<string, any>> {
   const initializedProviders: Record<string, any> = {}
   for (const chain of chains) {
     initializedProviders[chain] = new providers.JsonRpcProvider(rpcUrls[chain])
