@@ -1,6 +1,6 @@
 import Level from 'level-ts'
 import { BigNumber, utils } from 'ethers'
-import { DbEntry, Transfer } from '../interfaces'
+import { DbEntry, FinalEntries, Transfer } from '../interfaces'
 import { getTokenPrice } from './fetchTokenPrices'
 import {
   refundPercentage,
@@ -10,13 +10,11 @@ import {
   nativeTokens,
   tokenDecimals
 } from '../constants'
-const { ShardedMerkleTree } = require('../merkle')
 
 const { formatUnits, parseUnits } = utils
 
-async function main (db: Level) {
-  const merkleEntries: Record<string, BigNumber> = {}
-
+async function main (db: Level): Promise<FinalEntries> {
+  const finalEntries: FinalEntries = {}
   const iterator = db.iterate({ all: 'address::', keys: true })
   for await (const { key, value } of iterator) {
     const dbEntry: DbEntry = value
@@ -36,19 +34,19 @@ async function main (db: Level) {
       const refundAmountAfterDiscount = refundAmount * refundPercentage
       const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
 
-      if (!merkleEntries[address]) {
-        merkleEntries[address] = BigNumber.from('0')
+      if (!finalEntries[address]) {
+        finalEntries[address] = BigNumber.from('0')
       }
-      merkleEntries[address] = merkleEntries[address].add(refundAmountAfterDiscountWei)
+      finalEntries[address] = finalEntries[address].add(refundAmountAfterDiscountWei)
     }
 
     // Remove already claimed amount
-    if (merkleEntries[address]) {
-      merkleEntries[address] = merkleEntries[address].sub(value.amountClaimed)
+    if (finalEntries[address]) {
+      finalEntries[address] = finalEntries[address].sub(value.amountClaimed)
     }
   }
 
-  makeTree(merkleEntries)
+  return finalEntries
 }
 
 async function getUsdCost (db: Level, transfer: Transfer): Promise<number> {
@@ -104,18 +102,6 @@ async function getFeeInUsd (
   const price = await getTokenPrice(db, symbol, Number(timestamp))
   const formattedCost = formatUnits(costInAsset, decimals)
   return parseFloat(formattedCost) * price
-}
-
-function makeTree (merkleEntries: Record<string, BigNumber>) {
-  const entries: any[] = []
-  for (const address in merkleEntries) {
-    const amount = merkleEntries[address].toString()
-    const entry = [address, { balance: amount }]
-    entries.push(entry)
-  }
-
-  const shardNybbles = 2
-  ShardedMerkleTree.build(entries, shardNybbles, 'tree/')
 }
 
 export default main

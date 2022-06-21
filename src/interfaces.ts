@@ -1,3 +1,5 @@
+import { BigNumber } from 'ethers'
+
 export interface Transfer {
   hash: string
   timestamp: string
@@ -16,3 +18,5 @@ export interface DbEntry {
   amountClaimed: string
   transfers: Transfer[]
 }
+
+export type FinalEntries = Record<string, BigNumber>
