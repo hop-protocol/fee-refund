@@ -6,8 +6,7 @@ A tool to calculate the amount of tokens to refund to users.
 Seed data and calculate rewards
 
 ## Development
-
-Running the entire
+ 
 ```
 const feeRefund = new FeeRefund(
   dbDir,
@@ -19,6 +18,16 @@ const feeRefund = new FeeRefund(
 
 await feeRefund.seed()
 await feeRefund.calculateFees()
+```
+
+Example output from `calculateFees()`:
+
+```json
+{
+  "0x0000000000000000000000000000000000000000": "2235844954569473400",
+  "0x0000000000000000000000000000000000000001": "1805976165462823000",
+  "0x0000000000000000000000000000000000000002": "957778160370229000"
+}
 ```
 
 ## Test
