@@ -4,7 +4,9 @@
   "description": "OP fee refund logic",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint 'src/**/*'"
+    "lint": "eslint 'src/**/*'",
+    "publish:latest": "npm publish --tag latest --access public",
+    "test": "jest test"
   },
   "author": "Hop Team (@HopProtocol)",
   "license": "MIT",

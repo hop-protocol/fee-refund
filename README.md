@@ -24,7 +24,7 @@ await feeRefund.calculateFees()
 ## Test
 
 ```shell
-npx jest
+npm run test
 ```
 
 ## Lint

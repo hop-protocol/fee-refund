@@ -1,2 +1,9 @@
-test
-.env
+# ignore the .ts files
+*.ts
+
+# include the .d.ts files
+!*.d.ts
+
+*.env
+src/s3upload
+s3upload

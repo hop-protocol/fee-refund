@@ -9,22 +9,22 @@ import { DbEntry } from '../interfaces'
 
 async function main (db: Level, refundChain: string, startTimestamp: number) {
   let lastId = '0'
-  while (true) {
-    const data: any[] = await fetchExistingClaimsBatch(lastId, refundChain, startTimestamp)
+  // while (true) {
+  //   const data: any[] = await fetchExistingClaimsBatch(lastId, refundChain, startTimestamp)
 
-    if (!data || data.length === 0) break
-    lastId = data[data.length - 1].id
+  //   if (!data || data.length === 0) break
+  //   lastId = data[data.length - 1].id
 
-    for (const entry of data) {
-      const address: string = entry.from
-      const key = `address::${address}`
-      const dbEntry: DbEntry = await await db.get(key)
+  //   for (const entry of data) {
+  //     const address: string = entry.from
+  //     const key = `address::${address}`
+  //     const dbEntry: DbEntry = await await db.get(key)
 
-      const totalAmountClaimed = BigNumber.from(dbEntry.amountClaimed).add(entry.amount)
-      dbEntry.amountClaimed = totalAmountClaimed.toString()
-      await db.put(key, dbEntry)
-    }
-  }
+  //     const totalAmountClaimed = BigNumber.from(dbEntry.amountClaimed).add(entry.amount)
+  //     dbEntry.amountClaimed = totalAmountClaimed.toString()
+  //     await db.put(key, dbEntry)
+  //   }
+  // }
 }
 
 async function fetchExistingClaimsBatch (lastId: string, refundChain: string, startTimestamp: number) {
