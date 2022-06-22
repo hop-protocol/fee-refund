@@ -1,11 +1,11 @@
 {
-  "name": "fee-refund",
-  "version": "1.0.0",
-  "description": "OP fee refund logic",
+  "name": "@hop-protocol/fee-refund",
+  "version": "1.1.0",
+  "description": "Fee refund logic",
   "main": "index.js",
   "scripts": {
     "lint": "eslint 'src/**/*'",
-    "publish:latest": "npm publish --tag latest --access public",
+    "publish": "npm publish --tag latest --access public",
     "test": "jest test"
   },
   "author": "Hop Team (@HopProtocol)",
