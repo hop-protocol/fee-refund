@@ -49,7 +49,7 @@ async function fetchHopTransfers (
       dbEntry.address = address
       dbEntry.transfers.push({
         hash: entry.transactionHash,
-        timestamp: entry.timestamp,
+        timestamp: Number(entry.timestamp),
         amount: entry.amount,
         token: entry.token,
         bonderFee: entry.bonderFee || 0,

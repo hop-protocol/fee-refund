@@ -8,14 +8,14 @@ Seed data and calculate rewards
 ## Development
  
 ```
-const feeRefund = new FeeRefund(
+const feeRefund = new FeeRefund({
   dbDir,
   rpcUrls,
   merkleRewardsContractAddress,
   startTimestamp,
   refundPercentage,
   refundChain
-)
+})
 
 await feeRefund.seed()
 await feeRefund.calculateFees()

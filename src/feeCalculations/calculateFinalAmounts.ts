@@ -9,7 +9,12 @@ import {
 
 const { formatUnits, parseUnits } = utils
 
-async function main (db: Level, refundPercentage: number, refundTokenSymbol: string): Promise<FinalEntries> {
+async function main (
+  db: Level,
+  refundPercentage: number,
+  refundTokenSymbol: string,
+  endTimestamp: number
+): Promise<FinalEntries> {
   const finalEntries: FinalEntries = {}
   const iterator = db.iterate({ all: 'address::', keys: true })
   for await (const { key, value } of iterator) {
@@ -19,12 +24,18 @@ async function main (db: Level, refundPercentage: number, refundTokenSymbol: str
 
     let amount: BigNumber = BigNumber.from('0')
     for (const transfer of transfers) {
-      if (transfer.isAggregator) continue
+      if (
+        transfer.isAggregator ||
+        transfer.timestamp > endTimestamp
+      ) {
+        console.log(transfer.chain, transfer.hash, transfer.timestamp, endTimestamp)
+        continue
+      }
 
       // Calculate total amount
       const totalUsdCost = await getUsdCost(db, transfer)
       const symbol = refundTokenSymbol
-      const price = await getTokenPrice(db, symbol, Number(transfer.timestamp))
+      const price = await getTokenPrice(db, symbol, transfer.timestamp)
       const refundAmount = totalUsdCost / price
 
       // Apply refund discount
@@ -92,9 +103,9 @@ async function getFeeInUsd (
   costInAsset: BigNumber,
   symbol: string,
   decimals: number,
-  timestamp: string
+  timestamp: number
 ): Promise<number> {
-  const price = await getTokenPrice(db, symbol, Number(timestamp))
+  const price = await getTokenPrice(db, symbol, timestamp)
   const formattedCost = formatUnits(costInAsset, decimals)
   return parseFloat(formattedCost) * price
 }

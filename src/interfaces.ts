@@ -1,8 +1,6 @@
-import { BigNumber } from 'ethers'
-
 export interface Transfer {
   hash: string
-  timestamp: string
+  timestamp: number
   amount: string
   token: string
   bonderFee: string

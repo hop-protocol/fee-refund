@@ -10,6 +10,15 @@ import { tokenSymbols } from './constants'
 const fs = require('fs')
 const fse = require('fs-extra')
 
+export type Config = {
+  dbDir: string,
+  rpcUrls: RpcUrls,
+  merkleRewardsContractAddress: string,
+  startTimestamp: number,
+  refundPercentage: number,
+  refundChain: string
+}
+
 export class FeeRefund {
   dbDir: string
   rpcUrls: RpcUrls
@@ -19,21 +28,15 @@ export class FeeRefund {
   refundChain: string
   refundTokenSymbol: string
 
-  constructor (
-    _dbDir: string,
-    _rpcUrls: RpcUrls,
-    _merkleRewardsContractAddress: string,
-    _startTimestamp: number,
-    _refundPercentage: number,
-    _refundChain: string
-  ) {
-    const uniqueId: string = _refundChain + _startTimestamp.toString()
-    this.dbDir = _dbDir + '_' + uniqueId
-    this.rpcUrls = _rpcUrls
-    this.merkleRewardsContractAddress = _merkleRewardsContractAddress
-    this.startTimestamp = _startTimestamp
-    this.refundPercentage = _refundPercentage
-    this.refundChain = _refundChain
+  constructor (config: Config) {
+    const { dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, refundPercentage, refundChain } = config
+    const uniqueId: string = refundChain + startTimestamp.toString()
+    this.dbDir = dbDir + '_' + uniqueId
+    this.rpcUrls = rpcUrls
+    this.merkleRewardsContractAddress = merkleRewardsContractAddress
+    this.startTimestamp = startTimestamp
+    this.refundPercentage = refundPercentage
+    this.refundChain = refundChain
     this.refundTokenSymbol = tokenSymbols[this.refundChain]
   }
 
@@ -45,10 +48,10 @@ export class FeeRefund {
     await fetchExistingClaims(db, this.refundChain, this.merkleRewardsContractAddress)
   }
 
-  public async calculateFees (): Promise<FinalEntries> {
+  public async calculateFees (endTimestamp: number): Promise<FinalEntries> {
     const db = new Level(this.dbDir)
 
     await fetchTokenPrices(db)
-    return calculateFinalAmounts(db, this.refundPercentage, this.refundTokenSymbol)
+    return calculateFinalAmounts(db, this.refundPercentage, this.refundTokenSymbol, endTimestamp)
   }
 }
