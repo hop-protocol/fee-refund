@@ -7,29 +7,46 @@ import {
 } from '../constants'
 import { DbEntry } from '../interfaces'
 
-async function main (db: Level, refundChain: string, startTimestamp: number) {
+async function main (db: Level, refundChain: string, merkleRewardsContractAddress: string) {
   let lastId = '0'
-  // while (true) {
-  //   const data: any[] = await fetchExistingClaimsBatch(lastId, refundChain, startTimestamp)
+  while (true) {
+    const data: any[] = await fetchExistingClaimsBatch(lastId, refundChain, merkleRewardsContractAddress)
 
-  //   if (!data || data.length === 0) break
-  //   lastId = data[data.length - 1].id
+    if (!data || data.length === 0) break
+    lastId = data[data.length - 1].id
 
-  //   for (const entry of data) {
-  //     const address: string = entry.from
-  //     const key = `address::${address}`
-  //     const dbEntry: DbEntry = await await db.get(key)
+    for (const entry of data) {
+      const address: string = entry.from
+      const key = `address::${address}`
+      const dbEntry: DbEntry = await await db.get(key)
 
-  //     const totalAmountClaimed = BigNumber.from(dbEntry.amountClaimed).add(entry.amount)
-  //     dbEntry.amountClaimed = totalAmountClaimed.toString()
-  //     await db.put(key, dbEntry)
-  //   }
-  // }
+      const totalAmountClaimed = BigNumber.from(dbEntry.amountClaimed).add(entry.amount)
+      dbEntry.amountClaimed = totalAmountClaimed.toString()
+      await db.put(key, dbEntry)
+    }
+  }
 }
 
-async function fetchExistingClaimsBatch (lastId: string, refundChain: string, startTimestamp: number) {
-  // TODO
+async function fetchExistingClaimsBatch (
+  lastId: string,
+  refundChain: string,
+  merkleRewardsContractAddress: string
+) {
   const query = `
+    query ExistingClaims($pageSize: Int) {
+      existingClaims: claimedEntities(
+        first: $pageSize,
+        where: {
+          id_gt: $lastId,
+          contractAddress: ${merkleRewardsContractAddress}
+        },
+        orderBy: id,
+        orderDirection: asc
+      ) {
+        from
+        amount
+      }
+    }
   `
 
   const chain = refundChain
@@ -39,12 +56,10 @@ async function fetchExistingClaimsBatch (lastId: string, refundChain: string, st
     query,
     {
       pageSize: PAGE_SIZE,
-      lastId,
-      startTimestamp
+      lastId
     }
   )
-  // TODO: update key name
-  return data ? data.transfers : []
+  return data ? data.existingClaims : []
 }
 
 export default main

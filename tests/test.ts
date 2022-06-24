@@ -16,12 +16,14 @@ describe('Fee Refund', () => {
     arbitrum: process.env.ARBITRUM_RPC_URL!,
     optimism: process.env.OPTIMISM_RPC_URL!
   }
+  const merkleRewardsContractAddress = '0xa0B798BcAf87E033e2E6b6C1fd073203F314475a'
   const startTimestamp = 1655853888
   const refundPercentage = 0.8
   const refundChain = chainSlugs.optimism
   const feeRefund = new FeeRefund(
     dbDir,
     rpcUrls,
+    merkleRewardsContractAddress,
     startTimestamp,
     refundPercentage,
     refundChain

@@ -11,6 +11,7 @@ Seed data and calculate rewards
 const feeRefund = new FeeRefund(
   dbDir,
   rpcUrls,
+  merkleRewardsContractAddress,
   startTimestamp,
   refundPercentage,
   refundChain

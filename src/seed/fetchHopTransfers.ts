@@ -1,4 +1,5 @@
 import Level from 'level-ts'
+import getLastTimestamp from '../utils/getLastTimestamp'
 import getUrl from '../utils/getUrl'
 import queryFetch from '../utils/queryFetch'
 import {
@@ -9,16 +10,29 @@ import {
 } from '../constants'
 import { DbEntry } from '../interfaces'
 
-async function main (db: Level, refundChainId: number, startTimestamp: number) {
+async function main (db: Level, refundChain: string, startTimestamp: number) {
+  const refundChainId = chainIds[refundChain]
   await Promise.all(tokens.map(async (token) => {
     for (const chain of chains) {
+      const lastTimestamp = await getLastTimestamp(db, chain)
+      if (lastTimestamp) {
+        startTimestamp = lastTimestamp
+      }
+
       await fetchHopTransfers(db, token, chain, refundChainId, startTimestamp)
     }
   }))
 }
 
-async function fetchHopTransfers (db: any, token: string, chain: string, refundChainId: number, startTimestamp: number) {
+async function fetchHopTransfers (
+  db: any,
+  token: string,
+  chain: string,
+  refundChainId: number,
+  startTimestamp: number
+): Promise<void> {
   let lastId = '0'
+  let lastTimestamp = 0
   while (true) {
     const data: any[] = await fetchHopTransferBatch(token, chain, lastId, refundChainId, startTimestamp)
 
@@ -40,8 +54,16 @@ async function fetchHopTransfers (db: any, token: string, chain: string, refundC
         chain
       })
 
+      if (lastTimestamp < entry.timestamp) {
+        lastTimestamp = entry.timestamp
+      }
       await db.put(key, dbEntry)
     }
+  }
+
+  if (lastTimestamp) {
+    const lastTimestampKey = `timestamp::${chain}`
+    await db.put(lastTimestampKey, lastTimestamp)
   }
 }
 
