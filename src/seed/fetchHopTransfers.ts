@@ -6,6 +6,7 @@ import {
   PAGE_SIZE,
   chainIds,
   chains,
+  subgraphs,
   tokens
 } from '../constants'
 import { DbEntry } from '../interfaces'
@@ -16,7 +17,8 @@ async function main (db: Level, refundChain: string, startTimestamp: number) {
     for (const chain of chains) {
       const lastTimestamp = await getLastTimestamp(db, chain)
       if (lastTimestamp) {
-        startTimestamp = lastTimestamp
+        // Increment timestamp so there are no duplicates
+        startTimestamp = lastTimestamp + 1
       }
 
       await fetchHopTransfers(db, token, chain, refundChainId, startTimestamp)
@@ -125,7 +127,7 @@ async function fetchHopTransferBatch (
     `
   }
 
-  const url = getUrl(chain)
+  const url = getUrl(chain, subgraphs.hopBridge)
   const data = await queryFetch(
     url,
     query,

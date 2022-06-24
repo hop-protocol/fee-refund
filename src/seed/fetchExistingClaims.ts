@@ -3,7 +3,8 @@ import { BigNumber } from 'ethers'
 import getUrl from '../utils/getUrl'
 import queryFetch from '../utils/queryFetch'
 import {
-  PAGE_SIZE
+  PAGE_SIZE,
+  subgraphs
 } from '../constants'
 import { DbEntry } from '../interfaces'
 
@@ -33,24 +34,23 @@ async function fetchExistingClaimsBatch (
   merkleRewardsContractAddress: string
 ) {
   const query = `
-    query ExistingClaims($pageSize: Int) {
+    query ExistingClaims($pageSize: Int, $lastId: ID) {
       existingClaims: claimedEntities(
         first: $pageSize,
         where: {
           id_gt: $lastId,
-          contractAddress: ${merkleRewardsContractAddress}
+          contractAddress: "${merkleRewardsContractAddress.toLowerCase()}"
         },
         orderBy: id,
         orderDirection: asc
       ) {
-        from
         amount
       }
     }
   `
 
   const chain = refundChain
-  const url = getUrl(chain)
+  const url = getUrl(chain, subgraphs.merkleRewards)
   const data = await queryFetch(
     url,
     query,

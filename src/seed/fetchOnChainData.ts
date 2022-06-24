@@ -14,6 +14,13 @@ async function main (db: Level, rpcUrls: RpcUrls) {
 
     const transfers: Transfer[] = value.transfers
     for (const transfer of transfers) {
+      // Do not make on-chain calls if the data already exists
+      const isTransferPopulated = getIsTransferPopulated(transfer)
+      if (isTransferPopulated) {
+        allTransfers.push(transfer)
+        continue
+      }
+
       const tx = await initializedProviders[transfer.chain].getTransactionReceipt(transfer.hash)
       const gasUsed = tx.gasUsed.toString()
       const gasPrice = tx.effectiveGasPrice.toString()
@@ -40,6 +47,14 @@ async function getProviders (rpcUrls: RpcUrls): Promise<Record<string, any>> {
   }
 
   return initializedProviders
+}
+
+function getIsTransferPopulated (transfer: Transfer): boolean {
+  return (
+    typeof transfer.gasUsed !== 'undefined' &&
+    typeof transfer.gasPrice !== 'undefined' &&
+    typeof transfer.isAggregator !== 'undefined'
+  )
 }
 
 export default main

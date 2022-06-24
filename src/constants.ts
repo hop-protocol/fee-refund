@@ -64,3 +64,8 @@ export const aggregatorAddresses: Record<string, boolean> = {
   '0xc30141b657f4216252dc59af2e7cdb9d8792e1b0': true, // socket registry
   '0x362fa9d0bca5d19f743db50738345ce2b40ec99f': true // li fi
 }
+
+export const subgraphs: Record<string, string> = {
+  hopBridge: 'hopBridge',
+  merkleRewards: 'merkleRewards'
+}
