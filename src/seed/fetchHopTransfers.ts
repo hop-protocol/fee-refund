@@ -3,13 +3,14 @@ import getLastTimestamp from '../utils/getLastTimestamp'
 import getUrl from '../utils/getUrl'
 import queryFetch from '../utils/queryFetch'
 import {
+  ONE_DAY_SEC,
   PAGE_SIZE,
   chainIds,
   chains,
   subgraphs,
   tokens
 } from '../constants'
-import { DbEntry } from '../interfaces'
+import { DbEntry, Transfer } from '../interfaces'
 
 async function main (db: Level, refundChain: string, startTimestamp: number) {
   const refundChainId = chainIds[refundChain]
@@ -17,8 +18,11 @@ async function main (db: Level, refundChain: string, startTimestamp: number) {
     for (const chain of chains) {
       const lastTimestamp = await getLastTimestamp(db, chain)
       if (lastTimestamp) {
-        // Increment timestamp so there are no duplicates
-        startTimestamp = lastTimestamp + 1
+        // Resync one day in order to catch any missed events
+        const oneDayBeforeLastTimestamp = lastTimestamp - ONE_DAY_SEC
+        if (oneDayBeforeLastTimestamp > startTimestamp) {
+          startTimestamp = oneDayBeforeLastTimestamp
+        }
       }
 
       await fetchHopTransfers(db, token, chain, refundChainId, startTimestamp)
@@ -46,6 +50,11 @@ async function fetchHopTransfers (
       const key = `address::${address}`
 
       const dbEntry: DbEntry = await getDbEntry(db, key)
+
+      // Do not write to DB if transfer already exists
+      const isSeen = isTransactionSeen(dbEntry.transfers, entry.transactionHash)
+      if (isSeen) continue
+
       dbEntry.address = address
       dbEntry.transfers.push({
         hash: entry.transactionHash,
@@ -151,6 +160,16 @@ async function getDbEntry (db: Level, index: string): Promise<DbEntry> {
       transfers: []
     }
   }
+}
+
+function isTransactionSeen (transfers: Transfer[], transactionHash: string): boolean {
+  for (const transfer of transfers) {
+    if (transfer.hash === transactionHash) {
+      return true
+    }
+  }
+
+  return false
 }
 
 export default main

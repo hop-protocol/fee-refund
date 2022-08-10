@@ -17,17 +17,17 @@ describe('Fee Refund', () => {
     optimism: process.env.OPTIMISM_RPC_URL!
   }
   const merkleRewardsContractAddress = '0xa0B798BcAf87E033e2E6b6C1fd073203F314475a'
-  const startTimestamp = 1655853888
+  const startTimestamp = 1656115022
   const refundPercentage = 0.8
   const refundChain = chainSlugs.optimism
-  const feeRefund = new FeeRefund(
+  const feeRefund = new FeeRefund({
     dbDir,
     rpcUrls,
     merkleRewardsContractAddress,
     startTimestamp,
     refundPercentage,
     refundChain
-  )
+  })
 
   test('Seed OP Data', async () => {
     await feeRefund.seed()
@@ -35,7 +35,8 @@ describe('Fee Refund', () => {
   })
 
   test('Calculate Op rewards', async () => {
-    const refunds = await feeRefund.calculateFees()
+    const endTimestamp = 1656113602
+    const refunds = await feeRefund.calculateFees(endTimestamp)
     expect(typeof refunds).toBe('object')
   })
 })

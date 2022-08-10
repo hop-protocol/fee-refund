@@ -31,7 +31,7 @@ export class FeeRefund {
   constructor (config: Config) {
     const { dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, refundPercentage, refundChain } = config
     const uniqueId: string = refundChain + startTimestamp.toString()
-    this.dbDir = dbDir + '_' + uniqueId
+    this.dbDir = dbDir + '/' + uniqueId
     this.rpcUrls = rpcUrls
     this.merkleRewardsContractAddress = merkleRewardsContractAddress
     this.startTimestamp = startTimestamp
