@@ -20,6 +20,7 @@ async function main (
   for await (const { key, value } of iterator) {
     const dbEntry: DbEntry = value
     const address = dbEntry.address
+    // console.log(`processing dbEntry ${address}`)
     const transfers: Transfer[] = dbEntry.transfers
 
     let amount: BigNumber = BigNumber.from('0')
@@ -44,6 +45,7 @@ async function main (
       const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
 
       amount = amount.add(refundAmountAfterDiscountWei)
+      // console.log(`done processing dbEntry ${address}`)
     }
 
     if (amount.toString() !== '0') {

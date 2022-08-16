@@ -43,15 +43,23 @@ export class FeeRefund {
   public async seed (): Promise<void> {
     const db = new Level(this.dbDir)
 
+    console.log('fetching Hop transfers')
     await fetchHopTransfers(db, this.refundChain, this.startTimestamp)
+    console.log('fetching on-chain data')
     await fetchOnChainData(db, this.rpcUrls)
+    console.log('fetching existing claims')
     await fetchExistingClaims(db, this.refundChain, this.merkleRewardsContractAddress)
   }
 
   public async calculateFees (endTimestamp: number): Promise<FinalEntries> {
     const db = new Level(this.dbDir)
 
+    console.log('fetching token prices')
     await fetchTokenPrices(db)
-    return calculateFinalAmounts(db, this.refundPercentage, this.refundTokenSymbol, endTimestamp)
+    console.log('done fetching token prices')
+    console.log('calculating final amounts')
+    const result = await calculateFinalAmounts(db, this.refundPercentage, this.refundTokenSymbol, endTimestamp)
+    console.log('done calculating final amounts')
+    return result
   }
 }

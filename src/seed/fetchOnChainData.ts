@@ -5,39 +5,48 @@ import {
   chains
 } from '../constants'
 import { DbEntry, RpcUrls, Transfer } from '../interfaces'
+import { promiseQueue } from '../utils/promiseQueue'
 
 async function main (db: Level, rpcUrls: RpcUrls) {
   const initializedProviders = await getProviders(rpcUrls)
   const iterator = db.iterate({ all: 'address::', keys: true })
+  const fns : any[] = []
   for await (const { key, value } of iterator) {
-    const allTransfers: Transfer[] = []
+    fns.push(async () => {
+      const allTransfers: Transfer[] = []
 
-    const transfers: Transfer[] = value.transfers
-    for (const transfer of transfers) {
-      // Do not make on-chain calls if the data already exists
-      const isTransferPopulated = getIsTransferPopulated(transfer)
-      if (isTransferPopulated) {
-        allTransfers.push(transfer)
-        continue
+      const transfers: Transfer[] = value.transfers
+      for (const transfer of transfers) {
+        // Do not make on-chain calls if the data already exists
+        const isTransferPopulated = getIsTransferPopulated(transfer)
+        if (isTransferPopulated) {
+          allTransfers.push(transfer)
+          continue
+        }
+
+        const tx = await initializedProviders[transfer.chain].getTransactionReceipt(transfer.hash)
+        const gasUsed = tx.gasUsed.toString()
+        const gasPrice = tx.effectiveGasPrice.toString()
+        const isAggregator = aggregatorAddresses[tx.to.toLowerCase()] || false
+
+        const entry = Object.assign({ gasUsed, gasPrice, isAggregator }, transfer)
+        allTransfers.push(entry)
       }
 
-      const tx = await initializedProviders[transfer.chain].getTransactionReceipt(transfer.hash)
-      const gasUsed = tx.gasUsed.toString()
-      const gasPrice = tx.effectiveGasPrice.toString()
-      const isAggregator = aggregatorAddresses[tx.to.toLowerCase()] || false
+      const dbEntry: DbEntry = {
+        address: value.address,
+        amountClaimed: value.amountClaimed,
+        transfers: allTransfers
+      }
 
-      const entry = Object.assign({ gasUsed, gasPrice, isAggregator }, transfer)
-      allTransfers.push(entry)
-    }
-
-    const dbEntry: DbEntry = {
-      address: value.address,
-      amountClaimed: value.amountClaimed,
-      transfers: allTransfers
-    }
-
-    await db.put(key, dbEntry)
+      // console.log('done processing ${value.address}`)
+      await db.put(key, dbEntry)
+    })
   }
+
+  await promiseQueue(fns, async (fn: any) => {
+    await fn()
+  }, { concurrency: 100 })
 }
 
 async function getProviders (rpcUrls: RpcUrls): Promise<Record<string, any>> {

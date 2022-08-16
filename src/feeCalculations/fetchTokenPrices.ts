@@ -18,6 +18,11 @@ const fetchAllTokenPrices = async (db: Level) => {
   const tokens = Object.keys(coinIds)
   await Promise.all(tokens.map(async (token) => {
     const res = await fetchTokenPrices(token)
+    // console.log(res)
+
+    if (!res) {
+      throw new Error('no response')
+    }
 
     for (const data of res) {
       const timestamp = toSeconds(data[0])
@@ -54,7 +59,7 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
   })
 
   let lowestDiff: number = Number.MAX_SAFE_INTEGER
-  let price
+  let price : any
   for (const i in results) {
     const res = results[i].value
 
