@@ -1,6 +1,6 @@
 {
   "name": "@hop-protocol/fee-refund",
-  "version": "1.1.11",
+  "version": "1.1.12",
   "description": "Fee refund logic",
   "main": "dist/index.js",
   "scripts": {
