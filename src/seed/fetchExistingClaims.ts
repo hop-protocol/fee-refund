@@ -7,6 +7,7 @@ import {
   subgraphs
 } from '../constants'
 import { DbEntry } from '../interfaces'
+import { retry } from '../utils/retry'
 
 async function main (db: Level, refundChain: string, merkleRewardsContractAddress: string) {
   let lastId = '0'
@@ -51,7 +52,7 @@ async function fetchExistingClaimsBatch (
 
   const chain = refundChain
   const url = getUrl(chain, subgraphs.merkleRewards)
-  const data = await queryFetch(
+  const data = await retry(queryFetch)(
     url,
     query,
     {
