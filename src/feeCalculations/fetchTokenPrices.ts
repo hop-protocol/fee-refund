@@ -1,6 +1,7 @@
 import Level from 'level-ts'
 import fetch from 'node-fetch'
 import toSeconds from '../utils/toSeconds'
+import { retry } from '../utils/retry'
 
 const coinIds: { [key: string]: string } = {
   USDC: 'usd-coin',
@@ -17,9 +18,7 @@ const oneDay = 86400
 const fetchAllTokenPrices = async (db: Level) => {
   const tokens = Object.keys(coinIds)
   await Promise.all(tokens.map(async (token) => {
-    const res = await fetchTokenPrices(token)
-    // console.log(res)
-
+    const res = await retry(fetchTokenPrices)(token)
     if (!res) {
       throw new Error('no response')
     }
@@ -39,9 +38,15 @@ const fetchTokenPrices = async (tokenSymbol: string) => {
   const days = 365
   const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}&interval=daily`
 
-  const prices = await fetch(url)
-    .then(res => res.json())
-    .then(res => res.prices)
+  const res = await fetch(url)
+  const json = await res.json()
+  const { prices, status } = json
+  if (status?.error_message) {
+    throw new Error(status.error_message)
+  }
+  if (!prices) {
+    console.error('fetch error:', json)
+  }
 
   return prices
 }
