@@ -12,7 +12,7 @@ import {
 } from '../constants'
 import { DbEntry, Transfer } from '../interfaces'
 
-async function main (db: Level, refundChain: string, startTimestamp: number) {
+export async function fetchHopTransfers (db: Level, refundChain: string, startTimestamp: number) {
   const refundChainId = chainIds[refundChain]
   await Promise.all(tokens.map(async (token) => {
     for (const chain of chains) {
@@ -25,12 +25,12 @@ async function main (db: Level, refundChain: string, startTimestamp: number) {
         }
       }
 
-      await fetchHopTransfers(db, token, chain, refundChainId, startTimestamp)
+      await fetchHopTransfersDb(db, token, chain, refundChainId, startTimestamp)
     }
   }))
 }
 
-async function fetchHopTransfers (
+export async function fetchHopTransfersDb (
   db: any,
   token: string,
   chain: string,
@@ -173,5 +173,3 @@ function isTransactionSeen (transfers: Transfer[], transactionHash: string): boo
 
   return false
 }
-
-export default main

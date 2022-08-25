@@ -7,8 +7,9 @@ require('dotenv').config()
 const path = require('path')
 
 describe('Fee Refund', () => {
-  const seedDbDir = path.resolve(__dirname, '../dbs/seedDb')
+  const seedDbDir = path.resolve(__dirname, '../dbs')
   const dbDir = seedDbDir
+  console.log('db', dbDir)
   const rpcUrls: RpcUrls = {
     mainnet: process.env.MAINNET_RPC_URL!,
     polygon: process.env.POLYGON_RPC_URL!,
@@ -17,7 +18,7 @@ describe('Fee Refund', () => {
     optimism: process.env.OPTIMISM_RPC_URL!
   }
   const merkleRewardsContractAddress = '0xa0B798BcAf87E033e2E6b6C1fd073203F314475a'
-  const startTimestamp = 1656115022
+  const startTimestamp = Math.floor(Date.now() / 1000)
   const refundPercentage = 0.8
   const refundChain = chainSlugs.optimism
   const feeRefund = new FeeRefund({

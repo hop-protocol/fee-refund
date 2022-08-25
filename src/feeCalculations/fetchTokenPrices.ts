@@ -2,6 +2,7 @@ import Level from 'level-ts'
 import fetch from 'node-fetch'
 import toSeconds from '../utils/toSeconds'
 import { retry } from '../utils/retry'
+import { throttlePromise } from '../utils/throttlePromise'
 
 const coinIds: { [key: string]: string } = {
   USDC: 'usd-coin',
@@ -18,7 +19,7 @@ const oneDay = 86400
 export const fetchAllTokenPrices = async (db: Level) => {
   const tokens = Object.keys(coinIds)
   await Promise.all(tokens.map(async (token) => {
-    const res = await retry(fetchTokenPrices)(token)
+    const res: any = await retry(fetchTokenPrices)(token)
     if (!res) {
       throw new Error('no response')
     }
@@ -33,7 +34,7 @@ export const fetchAllTokenPrices = async (db: Level) => {
   }))
 }
 
-const fetchTokenPrices = async (tokenSymbol: string) => {
+const fetchTokenPrices = throttlePromise(async (tokenSymbol: string) => {
   const coinId = coinIds[tokenSymbol]
   const days = 365
   const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}&interval=daily`
@@ -49,7 +50,7 @@ const fetchTokenPrices = async (tokenSymbol: string) => {
   }
 
   return prices
-}
+})
 
 export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: number): Promise<number> => {
   const lowerBoundTimestamp = timestamp - oneDay
