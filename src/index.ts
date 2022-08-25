@@ -1,14 +1,12 @@
 import Level from 'level-ts'
-import { providers } from 'ethers'
-import { FinalEntries, RpcUrls } from './interfaces'
+import { BigNumber } from 'ethers'
+import { FinalEntries, RpcUrls, Transfer } from './interfaces'
 import fetchExistingClaims from './seed/fetchExistingClaims'
 import fetchHopTransfers from './seed/fetchHopTransfers'
 import fetchOnChainData from './seed/fetchOnChainData'
-import calculateFinalAmounts from './feeCalculations/calculateFinalAmounts'
+import { calculateFinalAmounts, getRefundAmount } from './feeCalculations/calculateFinalAmounts'
 import fetchTokenPrices from './feeCalculations/fetchTokenPrices'
 import { tokenSymbols } from './constants'
-const fs = require('fs')
-const fse = require('fs-extra')
 
 export type Config = {
   dbDir: string,
@@ -61,5 +59,11 @@ export class FeeRefund {
     const result = await calculateFinalAmounts(db, this.refundPercentage, this.refundTokenSymbol, endTimestamp)
     console.log('done calculating final amounts')
     return result
+  }
+
+  public async getRefundAmount (transfer: Transfer): Promise<BigNumber> {
+    const db = new Level(this.dbDir)
+    await fetchTokenPrices(db)
+    return getRefundAmount(db, transfer, this.refundTokenSymbol, this.refundPercentage)
   }
 }

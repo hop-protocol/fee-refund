@@ -15,7 +15,7 @@ const coinIds: { [key: string]: string } = {
 
 const oneDay = 86400
 
-const fetchAllTokenPrices = async (db: Level) => {
+export const fetchAllTokenPrices = async (db: Level) => {
   const tokens = Object.keys(coinIds)
   await Promise.all(tokens.map(async (token) => {
     const res = await retry(fetchTokenPrices)(token)
@@ -73,6 +73,10 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
       lowestDiff = diff
       price = res.price
     }
+  }
+
+  if (!price) {
+    throw new Error('getTokenPrice: no price found')
   }
 
   return price

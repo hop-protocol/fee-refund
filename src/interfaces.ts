@@ -9,6 +9,8 @@ export interface Transfer {
   gasPrice?: string
   isAggregator?: boolean
   claimedAmount?: string
+  deadline?: number
+  amountOutMin?: string
 }
 
 export interface DbEntry {

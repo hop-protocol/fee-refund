@@ -9,7 +9,7 @@ import {
 
 const { formatUnits, parseUnits } = utils
 
-async function main (
+export async function calculateFinalAmounts (
   db: Level,
   refundPercentage: number,
   refundTokenSymbol: string,
@@ -29,20 +29,11 @@ async function main (
         transfer.isAggregator ||
         transfer.timestamp > endTimestamp
       ) {
-        console.log(transfer.chain, transfer.hash, transfer.timestamp, endTimestamp)
+        // console.log(transfer.chain, transfer.hash, transfer.timestamp, endTimestamp)
         continue
       }
 
-      // Calculate total amount
-      const totalUsdCost = await getUsdCost(db, transfer)
-      const symbol = refundTokenSymbol
-      const price = await getTokenPrice(db, symbol, transfer.timestamp)
-      const refundAmount = totalUsdCost / price
-
-      // Apply refund discount
-      const decimals = tokenDecimals[symbol]
-      const refundAmountAfterDiscount = refundAmount * refundPercentage
-      const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
+      const refundAmountAfterDiscountWei = await getRefundAmount(db, transfer, refundTokenSymbol, refundPercentage)
 
       amount = amount.add(refundAmountAfterDiscountWei)
       // console.log(`done processing dbEntry ${address}`)
@@ -55,6 +46,20 @@ async function main (
   }
 
   return finalEntries
+}
+
+export async function getRefundAmount (db: Level, transfer: Transfer, refundTokenSymbol: string, refundPercentage: number): Promise<BigNumber> {
+  // Calculate total amount
+  const totalUsdCost = await getUsdCost(db, transfer)
+  const symbol = refundTokenSymbol
+  const price = await getTokenPrice(db, symbol, transfer.timestamp)
+  const refundAmount = totalUsdCost / price
+
+  // Apply refund discount
+  const decimals = tokenDecimals[symbol]
+  const refundAmountAfterDiscount = refundAmount * refundPercentage
+  const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
+  return refundAmountAfterDiscountWei
 }
 
 async function getUsdCost (db: Level, transfer: Transfer): Promise<number> {
@@ -111,5 +116,3 @@ async function getFeeInUsd (
   const formattedCost = formatUnits(costInAsset, decimals)
   return parseFloat(formattedCost) * price
 }
-
-export default main

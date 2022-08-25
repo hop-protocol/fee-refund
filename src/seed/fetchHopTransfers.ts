@@ -62,6 +62,8 @@ async function fetchHopTransfers (
         amount: entry.amount,
         token: entry.token,
         bonderFee: entry.bonderFee || 0,
+        deadline: Number(entry.deadline || 0),
+        amountOutMin: entry.amountOutMin || 0,
         chain
       })
 
