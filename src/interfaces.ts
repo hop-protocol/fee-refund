@@ -11,6 +11,7 @@ export interface Transfer {
   claimedAmount?: string
   deadline?: number
   amountOutMin?: string
+  gasCost?: string
 }
 
 export interface DbEntry {

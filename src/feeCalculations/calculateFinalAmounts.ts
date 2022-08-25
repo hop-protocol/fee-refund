@@ -64,9 +64,14 @@ export async function getRefundAmount (db: Level, transfer: Transfer, refundToke
 
 async function getUsdCost (db: Level, transfer: Transfer): Promise<number> {
   // Source tx fee
-  const gasUsed = BigNumber.from(transfer.gasUsed!)
-  const gasPrice = BigNumber.from(transfer.gasPrice!)
-  const txCost = gasUsed.mul(gasPrice)
+  let txCost = BigNumber.from(0)
+  if (transfer.gasCost) {
+    txCost = BigNumber.from(transfer.gasCost)
+  } else {
+    const gasUsed = BigNumber.from(transfer.gasUsed!)
+    const gasPrice = BigNumber.from(transfer.gasPrice!)
+    txCost = gasUsed.mul(gasPrice)
+  }
   const nativeTokenSymbol = nativeTokens[transfer.chain]
   const nativeTokenDecimals = 18
   const sourceTxCostUsd = await getFeeInUsd(
