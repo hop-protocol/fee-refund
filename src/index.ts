@@ -5,7 +5,7 @@ import fetchExistingClaims from './seed/fetchExistingClaims'
 import { fetchHopTransfers } from './seed/fetchHopTransfers'
 import fetchOnChainData from './seed/fetchOnChainData'
 import { calculateFinalAmounts, getRefundAmount } from './feeCalculations/calculateFinalAmounts'
-import fetchTokenPrices from './feeCalculations/fetchTokenPrices'
+import { fetchAllTokenPrices } from './feeCalculations/fetchTokenPrices'
 import { tokenSymbols } from './constants'
 
 export type Config = {
@@ -25,6 +25,7 @@ export class FeeRefund {
   refundPercentage: number
   refundChain: string
   refundTokenSymbol: string
+  db: any
 
   constructor (config: Config) {
     const { dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, refundPercentage, refundChain } = config
@@ -39,31 +40,37 @@ export class FeeRefund {
   }
 
   public async seed (): Promise<void> {
-    const db = new Level(this.dbDir)
+    if (!this.db) {
+      this.db = new Level(this.dbDir)
+    }
 
     console.log('fetching Hop transfers')
-    await fetchHopTransfers(db, this.refundChain, this.startTimestamp)
+    await fetchHopTransfers(this.db, this.refundChain, this.startTimestamp)
     console.log('fetching on-chain data')
-    await fetchOnChainData(db, this.rpcUrls)
+    await fetchOnChainData(this.db, this.rpcUrls)
     console.log('fetching existing claims')
-    await fetchExistingClaims(db, this.refundChain, this.merkleRewardsContractAddress)
+    await fetchExistingClaims(this.db, this.refundChain, this.merkleRewardsContractAddress)
   }
 
   public async calculateFees (endTimestamp: number): Promise<FinalEntries> {
-    const db = new Level(this.dbDir)
+    if (!this.db) {
+      this.db = new Level(this.dbDir)
+    }
 
     console.log('fetching token prices')
-    await fetchTokenPrices(db)
+    await fetchAllTokenPrices(this.db)
     console.log('done fetching token prices')
     console.log('calculating final amounts')
-    const result = await calculateFinalAmounts(db, this.refundPercentage, this.refundTokenSymbol, endTimestamp)
+    const result = await calculateFinalAmounts(this.db, this.refundPercentage, this.refundTokenSymbol, endTimestamp)
     console.log('done calculating final amounts')
     return result
   }
 
   public async getRefundAmount (transfer: Transfer): Promise<BigNumber> {
-    const db = new Level(this.dbDir)
-    await fetchTokenPrices(db)
-    return getRefundAmount(db, transfer, this.refundTokenSymbol, this.refundPercentage)
+    if (!this.db) {
+      this.db = new Level(this.dbDir)
+    }
+    await fetchAllTokenPrices(this.db)
+    return getRefundAmount(this.db, transfer, this.refundTokenSymbol, this.refundPercentage)
   }
 }

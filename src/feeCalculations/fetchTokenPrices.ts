@@ -100,5 +100,3 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
 const getKey = (tokenSymbol: string, timestamp: number) => {
   return `price::${tokenSymbol}::${timestamp}`
 }
-
-export default fetchAllTokenPrices
