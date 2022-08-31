@@ -59,12 +59,14 @@ export async function getRefundAmount (db: Level, transfer: Transfer, refundToke
   const decimals = tokenDecimals[symbol]
   const refundAmountAfterDiscount = refundAmount * refundPercentage
   const refundAmountAfterDiscountWei = parseUnits(Number(refundAmountAfterDiscount.toString()).toFixed(6), decimals)
+  const refundAmountAfterDiscountUsd = refundAmountAfterDiscount * price
 
   return {
     totalUsdCost,
     price,
     refundAmount,
     refundAmountAfterDiscount,
+    refundAmountAfterDiscountUsd,
     refundAmountAfterDiscountWei
   }
 }

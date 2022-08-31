@@ -66,7 +66,7 @@ export class FeeRefund {
     return result
   }
 
-  public async getRefundAmount (transfer: Transfer): Promise<BigNumber> {
+  public async getRefundAmount (transfer: Transfer): Promise<any> {
     if (!this.db) {
       this.db = new Level(this.dbDir)
     }
