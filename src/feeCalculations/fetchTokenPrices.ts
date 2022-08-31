@@ -60,8 +60,10 @@ const fetchTokenPrices = async (tokenSymbol: string) => {
     console.error('fetch error:', json)
   }
 
-  cache[coinId] = prices
-  cachedAt[coinId] = Date.now()
+  if (prices) {
+    cache[coinId] = prices
+    cachedAt[coinId] = Date.now()
+  }
 
   return prices
 }
@@ -91,7 +93,7 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
   }
 
   if (!price) {
-    throw new Error('getTokenPrice: no price found')
+    throw new Error(`getTokenPrice: no price found for key ${lowerBoundKey}`)
   }
 
   return price

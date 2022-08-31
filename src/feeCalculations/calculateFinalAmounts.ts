@@ -33,7 +33,7 @@ export async function calculateFinalAmounts (
         continue
       }
 
-      const refundAmountAfterDiscountWei = await getRefundAmount(db, transfer, refundTokenSymbol, refundPercentage)
+      const { refundAmountAfterDiscountWei } = await getRefundAmount(db, transfer, refundTokenSymbol, refundPercentage)
 
       amount = amount.add(refundAmountAfterDiscountWei)
       // console.log(`done processing dbEntry ${address}`)
@@ -48,7 +48,7 @@ export async function calculateFinalAmounts (
   return finalEntries
 }
 
-export async function getRefundAmount (db: Level, transfer: Transfer, refundTokenSymbol: string, refundPercentage: number): Promise<BigNumber> {
+export async function getRefundAmount (db: Level, transfer: Transfer, refundTokenSymbol: string, refundPercentage: number): Promise<any> {
   // Calculate total amount
   const totalUsdCost = await getUsdCost(db, transfer)
   const symbol = refundTokenSymbol
@@ -58,8 +58,15 @@ export async function getRefundAmount (db: Level, transfer: Transfer, refundToke
   // Apply refund discount
   const decimals = tokenDecimals[symbol]
   const refundAmountAfterDiscount = refundAmount * refundPercentage
-  const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
-  return refundAmountAfterDiscountWei
+  const refundAmountAfterDiscountWei = parseUnits(Number(refundAmountAfterDiscount.toString()).toFixed(6), decimals)
+
+  return {
+    totalUsdCost,
+    price,
+    refundAmount,
+    refundAmountAfterDiscount,
+    refundAmountAfterDiscountWei
+  }
 }
 
 async function getUsdCost (db: Level, transfer: Transfer): Promise<number> {
