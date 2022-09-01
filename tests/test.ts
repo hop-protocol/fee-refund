@@ -7,7 +7,7 @@ require('dotenv').config()
 const path = require('path')
 
 describe('Fee Refund', () => {
-  const seedDbDir = path.resolve(__dirname, '../dbs')
+  const seedDbDir = path.resolve(__dirname, '../test-db')
   const dbDir = seedDbDir
   console.log('db', dbDir)
   const rpcUrls: RpcUrls = {
@@ -17,8 +17,9 @@ describe('Fee Refund', () => {
     arbitrum: process.env.ARBITRUM_RPC_URL!,
     optimism: process.env.OPTIMISM_RPC_URL!
   }
-  const merkleRewardsContractAddress = '0xa0B798BcAf87E033e2E6b6C1fd073203F314475a'
-  const startTimestamp = Math.floor(Date.now() / 1000)
+  // const merkleRewardsContractAddress = '0xa0B798BcAf87E033e2E6b6C1fd073203F314475a' // optimism
+  const merkleRewardsContractAddress = '0x9dC2d609487Be9F1dDc54b0C242847114f337501' // goerli
+  const startTimestamp = Math.floor(Date.now() / 1000) - (24 * 60 * 60)
   const refundPercentage = 0.8
   const refundChain = chainSlugs.optimism
   const feeRefund = new FeeRefund({
@@ -36,8 +37,9 @@ describe('Fee Refund', () => {
   })
 
   test('Calculate Op rewards', async () => {
-    const endTimestamp = 1656113602
+    const endTimestamp = Math.floor(Date.now() / 1000)
     const refunds = await feeRefund.calculateFees(endTimestamp)
+    console.log(refunds)
     expect(typeof refunds).toBe('object')
   })
 })

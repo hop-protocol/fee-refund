@@ -3,13 +3,25 @@ require('dotenv').config()
 export const PAGE_SIZE = 1000
 export const ONE_DAY_SEC = 24 * 60 * 60
 
-export const chains: string[] = [
+export const network = process.env.NETWORK || 'mainnet'
+
+let chains: string[] = [
   'mainnet',
   'arbitrum',
   'optimism',
   'polygon',
   'gnosis'
 ]
+
+if (network === 'goerli') {
+  chains = [
+    'mainnet',
+    'optimism',
+    'polygon'
+  ]
+}
+
+export { chains }
 
 export const chainSlugs: {[key: string]: string} = {
   mainnet: 'mainnet',
@@ -45,7 +57,7 @@ export const tokenDecimals: {[key: string]: number} = {
   OP: 18
 }
 
-export const tokens: string[] = [
+let tokens: string[] = [
   'ETH',
   'MATIC',
   'USDC',
@@ -53,13 +65,32 @@ export const tokens: string[] = [
   'DAI'
 ]
 
-export const chainIds: Record<string, number> = {
+if (network === 'goerli') {
+  tokens = [
+    'ETH',
+    'USDC'
+  ]
+}
+
+export { tokens }
+
+let chainIds: Record<string, number> = {
   mainnet: 1,
   arbitrum: 42161,
   optimism: 10,
   polygon: 137,
   gnosis: 100
 }
+
+if (network === 'goerli') {
+  chainIds = {
+    mainnet: 5,
+    optimism: 420,
+    polygon: 80001
+  }
+}
+
+export { chainIds }
 
 export const aggregatorAddresses: Record<string, boolean> = {
   '0xc30141b657f4216252dc59af2e7cdb9d8792e1b0': true, // socket registry

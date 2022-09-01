@@ -1,6 +1,7 @@
 node_modules
 .env
 dbs
+test-db
 tree
 build
 dist

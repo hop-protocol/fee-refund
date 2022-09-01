@@ -39,7 +39,7 @@ async function main (db: Level, rpcUrls: RpcUrls) {
         transfers: allTransfers
       }
 
-      // console.log('done processing ${value.address}`)
+      // console.log(`done processing ${value.address}`)
       await db.put(key, dbEntry)
     })
   }
