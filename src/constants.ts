@@ -4,6 +4,11 @@ export const PAGE_SIZE = 1000
 export const ONE_DAY_SEC = 24 * 60 * 60
 
 export const network = process.env.NETWORK || 'mainnet'
+export const maxRefundAmount = Number(process.env.MAX_REFUND_AMOUNT || 20)
+
+if (!['mainnet', 'goerli'].includes(network)) {
+  throw new Error(`invalid network "${network}"`)
+}
 
 let chains: string[] = [
   'mainnet',

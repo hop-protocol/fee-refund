@@ -4,7 +4,8 @@ import { DbEntry, FinalEntries, Transfer } from '../interfaces'
 import { getTokenPrice } from './fetchTokenPrices'
 import {
   nativeTokens,
-  tokenDecimals
+  tokenDecimals,
+  maxRefundAmount
 } from '../constants'
 
 const { formatUnits, parseUnits } = utils
@@ -57,8 +58,8 @@ export async function getRefundAmount (db: Level, transfer: Transfer, refundToke
 
   // Apply refund discount
   const decimals = tokenDecimals[symbol]
-  const refundAmountAfterDiscount = refundAmount * refundPercentage
-  const refundAmountAfterDiscountWei = parseUnits(Number(refundAmountAfterDiscount.toString()).toFixed(6), decimals)
+  const refundAmountAfterDiscount = Math.min(refundAmount * refundPercentage, maxRefundAmount)
+  const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
   const refundAmountAfterDiscountUsd = refundAmountAfterDiscount * price
 
   return {
