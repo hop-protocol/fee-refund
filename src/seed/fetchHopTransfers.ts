@@ -10,7 +10,7 @@ import {
   subgraphs,
   tokens
 } from '../constants'
-import { DbEntry, Transfer } from '../interfaces'
+import { DbEntry, Transfer } from '../types/interfaces'
 
 export async function fetchHopTransfers (db: Level, refundChain: string, startTimestamp: number) {
   const refundChainId = chainIds[refundChain]

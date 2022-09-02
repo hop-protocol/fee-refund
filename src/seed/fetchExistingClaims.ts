@@ -6,7 +6,7 @@ import {
   PAGE_SIZE,
   subgraphs
 } from '../constants'
-import { DbEntry } from '../interfaces'
+import { DbEntry } from '../types/interfaces'
 import { retry } from '../utils/retry'
 
 async function main (db: Level, refundChain: string, merkleRewardsContractAddress: string) {

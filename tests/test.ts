@@ -1,8 +1,8 @@
-import { FeeRefund } from '../src/index'
+import { FeeRefund } from '../src/feeRefund'
 import { chainSlugs } from '../src/constants'
 import {
   RpcUrls
-} from '../src/interfaces'
+} from '../src/types/interfaces'
 require('dotenv').config()
 const path = require('path')
 
@@ -22,13 +22,15 @@ describe('Fee Refund', () => {
   const startTimestamp = Math.floor(Date.now() / 1000) - (24 * 60 * 60)
   const refundPercentage = 0.8
   const refundChain = chainSlugs.optimism
+  const refundTokenSymbol = process.env.REFUND_TOKEN_SYMBOL
   const feeRefund = new FeeRefund({
     dbDir,
     rpcUrls,
     merkleRewardsContractAddress,
     startTimestamp,
     refundPercentage,
-    refundChain
+    refundChain,
+    refundTokenSymbol
   })
 
   test('Seed OP Data', async () => {
@@ -41,5 +43,22 @@ describe('Fee Refund', () => {
     const refunds = await feeRefund.calculateFees(endTimestamp)
     console.log(refunds)
     expect(typeof refunds).toBe('object')
+  })
+
+  test('fee refund amount', async () => {
+    const transfer = {
+      gasUsed: '144561',
+      gasPrice: '9408027411',
+      amount: '1000000000000000',
+      token: 'ETH',
+      bonderFee: '0',
+      chain: 'mainnet',
+      timestamp: 0,
+      hash: ''
+    }
+
+    const refund = await feeRefund.getRefundAmount(transfer)
+    console.log(refund)
+    expect(typeof refund).toBe('object')
   })
 })

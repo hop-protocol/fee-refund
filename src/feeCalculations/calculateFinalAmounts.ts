@@ -1,6 +1,6 @@
 import Level from 'level-ts'
 import { BigNumber, utils } from 'ethers'
-import { DbEntry, FinalEntries, Transfer } from '../interfaces'
+import { DbEntry, FinalEntries, Transfer } from '../types/interfaces'
 import { getTokenPrice } from './fetchTokenPrices'
 import {
   nativeTokens,
@@ -52,12 +52,11 @@ export async function calculateFinalAmounts (
 export async function getRefundAmount (db: Level, transfer: Transfer, refundTokenSymbol: string, refundPercentage: number): Promise<any> {
   // Calculate total amount
   const totalUsdCost = await getUsdCost(db, transfer)
-  const symbol = refundTokenSymbol
-  const price = await getTokenPrice(db, symbol, transfer.timestamp)
+  const price = await getTokenPrice(db, refundTokenSymbol, transfer.timestamp)
   const refundAmount = totalUsdCost / price
 
   // Apply refund discount
-  const decimals = tokenDecimals[symbol]
+  const decimals = tokenDecimals[refundTokenSymbol]
   const refundAmountAfterDiscount = Math.min(refundAmount * refundPercentage, maxRefundAmount)
   const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
   const refundAmountAfterDiscountUsd = refundAmountAfterDiscount * price
@@ -68,7 +67,8 @@ export async function getRefundAmount (db: Level, transfer: Transfer, refundToke
     refundAmount,
     refundAmountAfterDiscount,
     refundAmountAfterDiscountUsd,
-    refundAmountAfterDiscountWei
+    refundAmountAfterDiscountWei,
+    refundTokenSymbol
   }
 }
 

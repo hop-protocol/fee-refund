@@ -4,7 +4,7 @@ import {
   aggregatorAddresses,
   chains
 } from '../constants'
-import { DbEntry, RpcUrls, Transfer } from '../interfaces'
+import { DbEntry, RpcUrls, Transfer } from '../types/interfaces'
 import { promiseQueue } from '../utils/promiseQueue'
 
 async function main (db: Level, rpcUrls: RpcUrls) {

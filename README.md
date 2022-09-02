@@ -6,7 +6,7 @@ A tool to calculate the amount of tokens to refund to users.
 Seed data and calculate rewards
 
 ## Development
- 
+
 ```
 const feeRefund = new FeeRefund({
   dbDir,
@@ -14,7 +14,8 @@ const feeRefund = new FeeRefund({
   merkleRewardsContractAddress,
   startTimestamp,
   refundPercentage,
-  refundChain
+  refundChain,
+  refundTokenSymbol
 })
 
 await feeRefund.seed()
