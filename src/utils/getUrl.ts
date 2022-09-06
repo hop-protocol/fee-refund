@@ -1,6 +1,6 @@
-import { subgraphs, network } from '../constants'
+import { subgraphs } from '../constants'
 
-function getUrl (chain: string, subgraph: string) {
+function getUrl (network: string, chain: string, subgraph: string) {
   if (chain === 'gnosis') {
     chain = 'xdai'
   }

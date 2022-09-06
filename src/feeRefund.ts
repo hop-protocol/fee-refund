@@ -5,9 +5,9 @@ import { fetchHopTransfers } from './seed/fetchHopTransfers'
 import fetchOnChainData from './seed/fetchOnChainData'
 import { calculateFinalAmounts, getRefundAmount } from './feeCalculations/calculateFinalAmounts'
 import { fetchAllTokenPrices } from './feeCalculations/fetchTokenPrices'
-import { tokenSymbols } from './constants'
 
 export type Config = {
+  network?: string,
   dbDir: string,
   rpcUrls: RpcUrls,
   merkleRewardsContractAddress: string,
@@ -15,6 +15,7 @@ export type Config = {
   refundPercentage: number,
   refundChain: string
   refundTokenSymbol: string
+  maxRefundAmount: number
 }
 
 export class FeeRefund {
@@ -26,10 +27,16 @@ export class FeeRefund {
   refundChain: string
   refundTokenSymbol: string
   db: any
+  network: string
+  maxRefundAmount: number
+  chains: string[]
+  tokens: string[]
+  chainIds: Record<string, number>
 
   constructor (config: Config) {
-    const { dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, refundPercentage, refundChain, refundTokenSymbol } = config
+    const { network = 'mainnet', dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, refundPercentage, refundChain, refundTokenSymbol, maxRefundAmount = 100 } = config
     const uniqueId: string = refundChain + startTimestamp.toString()
+    this.network = network
     this.dbDir = dbDir + '/' + uniqueId
     this.rpcUrls = rpcUrls
     this.merkleRewardsContractAddress = merkleRewardsContractAddress
@@ -37,6 +44,58 @@ export class FeeRefund {
     this.refundPercentage = refundPercentage
     this.refundChain = refundChain
     this.refundTokenSymbol = refundTokenSymbol
+    this.maxRefundAmount = maxRefundAmount
+
+    if (!['mainnet', 'goerli'].includes(network)) {
+      throw new Error(`invalid network "${network}"`)
+    }
+
+    this.chains = [
+      'mainnet',
+      'arbitrum',
+      'optimism',
+      'polygon',
+      'gnosis'
+    ]
+
+    if (network === 'goerli') {
+      this.chains = [
+        'mainnet',
+        'optimism',
+        'polygon'
+      ]
+    }
+
+    this.tokens = [
+      'ETH',
+      'MATIC',
+      'USDC',
+      'USDT',
+      'DAI'
+    ]
+
+    if (network === 'goerli') {
+      this.tokens = [
+        'ETH',
+        'USDC'
+      ]
+    }
+
+    this.chainIds = {
+      mainnet: 1,
+      arbitrum: 42161,
+      optimism: 10,
+      polygon: 137,
+      gnosis: 100
+    }
+
+    if (network === 'goerli') {
+      this.chainIds = {
+        mainnet: 5,
+        optimism: 420,
+        polygon: 80001
+      }
+    }
   }
 
   public async seed (): Promise<void> {
@@ -45,11 +104,11 @@ export class FeeRefund {
     }
 
     console.log('fetching Hop transfers')
-    await fetchHopTransfers(this.db, this.refundChain, this.startTimestamp)
+    await fetchHopTransfers(this.network, this.db, this.refundChain, this.startTimestamp, this.chains, this.chainIds, this.tokens)
     console.log('fetching on-chain data')
     await fetchOnChainData(this.db, this.rpcUrls)
     console.log('fetching existing claims')
-    await fetchExistingClaims(this.db, this.refundChain, this.merkleRewardsContractAddress)
+    await fetchExistingClaims(this.db, this.refundChain, this.merkleRewardsContractAddress, this.network)
   }
 
   public async calculateFees (endTimestamp: number): Promise<FinalEntries> {
@@ -61,7 +120,7 @@ export class FeeRefund {
     await fetchAllTokenPrices(this.db)
     console.log('done fetching token prices')
     console.log('calculating final amounts')
-    const result = await calculateFinalAmounts(this.db, this.refundPercentage, this.refundTokenSymbol, endTimestamp)
+    const result = await calculateFinalAmounts(this.db, this.refundPercentage, this.refundTokenSymbol, endTimestamp, this.maxRefundAmount)
     console.log('done calculating final amounts')
     return result
   }
@@ -71,6 +130,6 @@ export class FeeRefund {
       this.db = new Level(this.dbDir)
     }
     await fetchAllTokenPrices(this.db)
-    return getRefundAmount(this.db, transfer, this.refundTokenSymbol, this.refundPercentage)
+    return getRefundAmount(this.db, transfer, this.refundTokenSymbol, this.refundPercentage, this.maxRefundAmount)
   }
 }

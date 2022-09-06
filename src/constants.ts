@@ -3,31 +3,6 @@ require('dotenv').config()
 export const PAGE_SIZE = 1000
 export const ONE_DAY_SEC = 24 * 60 * 60
 
-export const network = process.env.NETWORK || 'mainnet'
-export const maxRefundAmount = Number(process.env.MAX_REFUND_AMOUNT || 20)
-
-if (!['mainnet', 'goerli'].includes(network)) {
-  throw new Error(`invalid network "${network}"`)
-}
-
-let chains: string[] = [
-  'mainnet',
-  'arbitrum',
-  'optimism',
-  'polygon',
-  'gnosis'
-]
-
-if (network === 'goerli') {
-  chains = [
-    'mainnet',
-    'optimism',
-    'polygon'
-  ]
-}
-
-export { chains }
-
 export const chainSlugs: {[key: string]: string} = {
   mainnet: 'mainnet',
   arbitrum: 'arbitrum',
@@ -61,41 +36,6 @@ export const tokenDecimals: {[key: string]: number} = {
   FRAX: 18,
   OP: 18
 }
-
-let tokens: string[] = [
-  'ETH',
-  'MATIC',
-  'USDC',
-  'USDT',
-  'DAI'
-]
-
-if (network === 'goerli') {
-  tokens = [
-    'ETH',
-    'USDC'
-  ]
-}
-
-export { tokens }
-
-let chainIds: Record<string, number> = {
-  mainnet: 1,
-  arbitrum: 42161,
-  optimism: 10,
-  polygon: 137,
-  gnosis: 100
-}
-
-if (network === 'goerli') {
-  chainIds = {
-    mainnet: 5,
-    optimism: 420,
-    polygon: 80001
-  }
-}
-
-export { chainIds }
 
 export const aggregatorAddresses: Record<string, boolean> = {
   '0xc30141b657f4216252dc59af2e7cdb9d8792e1b0': true, // socket registry

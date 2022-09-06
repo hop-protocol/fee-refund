@@ -1,8 +1,7 @@
 import Level from 'level-ts'
 import { providers } from 'ethers'
 import {
-  aggregatorAddresses,
-  chains
+  aggregatorAddresses
 } from '../constants'
 import { DbEntry, RpcUrls, Transfer } from '../types/interfaces'
 import { promiseQueue } from '../utils/promiseQueue'
@@ -25,6 +24,9 @@ async function main (db: Level, rpcUrls: RpcUrls) {
         }
 
         const tx = await initializedProviders[transfer.chain].getTransactionReceipt(transfer.hash)
+        if (!tx) {
+          throw new Error(`expected tx on chain "${transfer.chain}" for hash "${transfer.hash}"`)
+        }
         const gasUsed = tx.gasUsed.toString()
         const gasPrice = tx.effectiveGasPrice.toString()
         const isAggregator = aggregatorAddresses[tx.to.toLowerCase()] || false
@@ -51,7 +53,7 @@ async function main (db: Level, rpcUrls: RpcUrls) {
 
 async function getProviders (rpcUrls: RpcUrls): Promise<Record<string, any>> {
   const initializedProviders: Record<string, any> = {}
-  for (const chain of chains) {
+  for (const chain in rpcUrls) {
     initializedProviders[chain] = new providers.JsonRpcProvider(rpcUrls[chain])
   }
 

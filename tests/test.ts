@@ -30,7 +30,8 @@ describe('Fee Refund', () => {
     startTimestamp,
     refundPercentage,
     refundChain,
-    refundTokenSymbol
+    refundTokenSymbol,
+    maxRefundAmount: 20
   })
 
   test('Seed OP Data', async () => {

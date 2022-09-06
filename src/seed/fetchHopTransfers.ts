@@ -5,14 +5,11 @@ import queryFetch from '../utils/queryFetch'
 import {
   ONE_DAY_SEC,
   PAGE_SIZE,
-  chainIds,
-  chains,
-  subgraphs,
-  tokens
+  subgraphs
 } from '../constants'
 import { DbEntry, Transfer } from '../types/interfaces'
 
-export async function fetchHopTransfers (db: Level, refundChain: string, startTimestamp: number) {
+export async function fetchHopTransfers (network: string, db: Level, refundChain: string, startTimestamp: number, chains: string[], chainIds: Record<string, number>, tokens: string[]) {
   const refundChainId = chainIds[refundChain]
   await Promise.all(tokens.map(async (token) => {
     for (const chain of chains) {
@@ -25,12 +22,13 @@ export async function fetchHopTransfers (db: Level, refundChain: string, startTi
         }
       }
 
-      await fetchHopTransfersDb(db, token, chain, refundChainId, startTimestamp)
+      await fetchHopTransfersDb(network, db, token, chain, refundChainId, startTimestamp)
     }
   }))
 }
 
 export async function fetchHopTransfersDb (
+  network: any,
   db: any,
   token: string,
   chain: string,
@@ -40,7 +38,7 @@ export async function fetchHopTransfersDb (
   let lastId = '0'
   let lastTimestamp = 0
   while (true) {
-    const data: any[] = await fetchHopTransferBatch(token, chain, lastId, refundChainId, startTimestamp)
+    const data: any[] = await fetchHopTransferBatch(network, token, chain, lastId, refundChainId, startTimestamp)
 
     if (!data || data.length === 0) break
     lastId = data[data.length - 1].id
@@ -81,13 +79,14 @@ export async function fetchHopTransfersDb (
 }
 
 async function fetchHopTransferBatch (
+  network: string,
   token: string,
   chain: string,
   lastId: string,
   refundChainId: number,
   startTimestamp: number
 ) {
-  let query
+  let query : string
 
   if (chain === 'mainnet') {
     query = `
@@ -138,7 +137,7 @@ async function fetchHopTransferBatch (
     `
   }
 
-  const url = getUrl(chain, subgraphs.hopBridge)
+  const url = getUrl(network, chain, subgraphs.hopBridge)
   const data = await queryFetch(
     url,
     query,

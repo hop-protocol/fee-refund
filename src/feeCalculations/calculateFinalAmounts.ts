@@ -4,8 +4,7 @@ import { DbEntry, FinalEntries, Transfer } from '../types/interfaces'
 import { getTokenPrice } from './fetchTokenPrices'
 import {
   nativeTokens,
-  tokenDecimals,
-  maxRefundAmount
+  tokenDecimals
 } from '../constants'
 
 const { formatUnits, parseUnits } = utils
@@ -14,7 +13,8 @@ export async function calculateFinalAmounts (
   db: Level,
   refundPercentage: number,
   refundTokenSymbol: string,
-  endTimestamp: number
+  endTimestamp: number,
+  maxRefundAmount: number
 ): Promise<FinalEntries> {
   const finalEntries: FinalEntries = {}
   const iterator = db.iterate({ all: 'address::', keys: true })
@@ -34,7 +34,7 @@ export async function calculateFinalAmounts (
         continue
       }
 
-      const { refundAmountAfterDiscountWei } = await getRefundAmount(db, transfer, refundTokenSymbol, refundPercentage)
+      const { refundAmountAfterDiscountWei } = await getRefundAmount(db, transfer, refundTokenSymbol, refundPercentage, maxRefundAmount)
 
       amount = amount.add(refundAmountAfterDiscountWei)
       // console.log(`done processing dbEntry ${address}`)
@@ -49,7 +49,7 @@ export async function calculateFinalAmounts (
   return finalEntries
 }
 
-export async function getRefundAmount (db: Level, transfer: Transfer, refundTokenSymbol: string, refundPercentage: number): Promise<any> {
+export async function getRefundAmount (db: Level, transfer: Transfer, refundTokenSymbol: string, refundPercentage: number, maxRefundAmount): Promise<any> {
   // Calculate total amount
   const totalUsdCost = await getUsdCost(db, transfer)
   const price = await getTokenPrice(db, refundTokenSymbol, transfer.timestamp)

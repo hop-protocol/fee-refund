@@ -9,10 +9,10 @@ import {
 import { DbEntry } from '../types/interfaces'
 import { retry } from '../utils/retry'
 
-async function main (db: Level, refundChain: string, merkleRewardsContractAddress: string) {
+async function main (db: Level, refundChain: string, merkleRewardsContractAddress: string, network: string) {
   let lastId = '0'
   while (true) {
-    const data: any[] = await fetchExistingClaimsBatch(lastId, refundChain, merkleRewardsContractAddress)
+    const data: any[] = await fetchExistingClaimsBatch(network, lastId, refundChain, merkleRewardsContractAddress)
 
     if (!data || data.length === 0) break
     lastId = data[data.length - 1].id
@@ -30,6 +30,7 @@ async function main (db: Level, refundChain: string, merkleRewardsContractAddres
 }
 
 async function fetchExistingClaimsBatch (
+  network: string,
   lastId: string,
   refundChain: string,
   merkleRewardsContractAddress: string
@@ -51,7 +52,7 @@ async function fetchExistingClaimsBatch (
   `
 
   const chain = refundChain
-  const url = getUrl(chain, subgraphs.merkleRewards)
+  const url = getUrl(network, chain, subgraphs.merkleRewards)
   const data = await retry(queryFetch)(
     url,
     query,
