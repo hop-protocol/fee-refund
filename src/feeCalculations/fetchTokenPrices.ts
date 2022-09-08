@@ -2,6 +2,7 @@ import Level from 'level-ts'
 import fetch from 'node-fetch'
 import toSeconds from '../utils/toSeconds'
 import { retry } from '../utils/retry'
+import { DateTime } from 'luxon'
 
 const cache :Record<string, any> = {}
 const cachedAt :Record<string, number> = {}
@@ -69,8 +70,11 @@ const fetchTokenPrices = async (tokenSymbol: string) => {
 }
 
 export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: number): Promise<number> => {
-  const lowerBoundTimestamp = timestamp - oneDay
-  const upperBoundTimestamp = timestamp + oneDay
+  if (!timestamp) {
+    throw new Error('getTokenPrice: expected timestamp')
+  }
+  const lowerBoundTimestamp = DateTime.fromSeconds(timestamp).toUTC().startOf('day').minus({ days: 1 }).toSeconds()
+  const upperBoundTimestamp = DateTime.fromSeconds(timestamp).toUTC().startOf('day').toSeconds()
 
   const lowerBoundKey = getKey(tokenSymbol, lowerBoundTimestamp)
   const upperBoundKey = getKey(tokenSymbol, upperBoundTimestamp)
