@@ -14,7 +14,8 @@ const coinIds: { [key: string]: string } = {
   ETH: 'ethereum',
   MATIC: 'matic-network',
   WBTC: 'wrapped-bitcoin',
-  OP: 'optimism'
+  OP: 'optimism',
+  HOP: 'hop-protocol',
 }
 
 const oneDay = 86400

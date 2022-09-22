@@ -51,14 +51,19 @@ export async function calculateFinalAmounts (
 
 export async function getRefundAmount (db: Level, transfer: Transfer, refundTokenSymbol: string, refundPercentage: number, maxRefundAmount): Promise<any> {
   // Calculate total amount
-  const totalUsdCost = await getUsdCost(db, transfer)
+  const {
+    sourceTxCostUsd,
+    bonderFeeUsd,
+    ammFeeUsd,
+    totalUsdCost
+  } = await getUsdCost(db, transfer)
   const price = await getTokenPrice(db, refundTokenSymbol, transfer.timestamp)
   const refundAmount = totalUsdCost / price
 
   // Apply refund discount
   const decimals = tokenDecimals[refundTokenSymbol]
   const refundAmountAfterDiscount = Math.min(refundAmount * refundPercentage, maxRefundAmount)
-  const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
+  const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toFixed(decimals), decimals)
   const refundAmountAfterDiscountUsd = refundAmountAfterDiscount * price
 
   return {
@@ -68,11 +73,14 @@ export async function getRefundAmount (db: Level, transfer: Transfer, refundToke
     refundAmountAfterDiscount,
     refundAmountAfterDiscountUsd,
     refundAmountAfterDiscountWei,
-    refundTokenSymbol
+    refundTokenSymbol,
+    sourceTxCostUsd,
+    bonderFeeUsd,
+    ammFeeUsd
   }
 }
 
-async function getUsdCost (db: Level, transfer: Transfer): Promise<number> {
+async function getUsdCost (db: Level, transfer: Transfer): Promise<any> {
   // Source tx fee
   let txCost = BigNumber.from(0)
   if (transfer.gasCost) {
@@ -117,7 +125,14 @@ async function getUsdCost (db: Level, transfer: Transfer): Promise<number> {
     transfer.timestamp
   )
 
-  return sourceTxCostUsd + bonderFeeUsd + ammFeeUsd
+  const totalUsdCost = sourceTxCostUsd + bonderFeeUsd + ammFeeUsd
+
+  return {
+    sourceTxCostUsd,
+    bonderFeeUsd,
+    ammFeeUsd,
+    totalUsdCost
+  }
 }
 
 async function getFeeInUsd (
@@ -125,9 +140,9 @@ async function getFeeInUsd (
   costInAsset: BigNumber,
   symbol: string,
   decimals: number,
-  timestamp: number
+  timestamp: number,
 ): Promise<number> {
   const price = await getTokenPrice(db, symbol, timestamp)
   const formattedCost = formatUnits(costInAsset, decimals)
-  return parseFloat(formattedCost) * price
+  return Number(formattedCost) * price
 }
