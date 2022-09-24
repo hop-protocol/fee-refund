@@ -113,17 +113,21 @@ async function getUsdCost (db: Level, transfer: Transfer): Promise<any> {
   )
 
   // AMM fee
-  const swapFeeBps = '4'
-  const ammFee = BigNumber.from(transfer.amount).mul(swapFeeBps).div('10000')
-  const ammFeeSymbol = transfer.token
-  const ammFeeTokenDecimals = tokenDecimals[transfer.token]
-  const ammFeeUsd = await getFeeInUsd(
-    db,
-    ammFee,
-    ammFeeSymbol,
-    ammFeeTokenDecimals,
-    transfer.timestamp
-  )
+  let ammFeeUsd = 0
+  const isSwap = transfer?.deadline > 0 || BigNumber.from(transfer?.amountOutMin ?? 0).gt(0)
+  if (isSwap) {
+    const swapFeeBps = '4'
+    const ammFee = BigNumber.from(transfer.amount).mul(swapFeeBps).div('10000')
+    const ammFeeSymbol = transfer.token
+    const ammFeeTokenDecimals = tokenDecimals[transfer.token]
+    ammFeeUsd = await getFeeInUsd(
+      db,
+      ammFee,
+      ammFeeSymbol,
+      ammFeeTokenDecimals,
+      transfer.timestamp
+    )
+  }
 
   const totalUsdCost = sourceTxCostUsd + bonderFeeUsd + ammFeeUsd
 

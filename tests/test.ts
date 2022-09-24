@@ -17,7 +17,7 @@ describe('Fee Refund', () => {
     arbitrum: process.env.ARBITRUM_RPC_URL!,
     optimism: process.env.OPTIMISM_RPC_URL!
   }
-  const merkleRewardsContractAddress = '0xa0B798BcAf87E033e2E6b6C1fd073203F314475a' // optimism
+  const merkleRewardsContractAddress = '0x45269F59aA76bB491D0Fc4c26F468D8E1EE26b73' // optimism
   // const merkleRewardsContractAddress = '0x9dC2d609487Be9F1dDc54b0C242847114f337501' // goerli
   const startTimestamp = Math.floor(Date.now() / 1000) - (24 * 60 * 60)
   const refundPercentage = 0.8

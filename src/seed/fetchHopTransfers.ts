@@ -106,6 +106,8 @@ async function fetchHopTransferBatch (
           transactionHash
           from
           timestamp
+          deadline
+          amountOutMin
           amount
           token
         }
@@ -129,6 +131,8 @@ async function fetchHopTransferBatch (
           transactionHash
           from
           timestamp
+          deadline
+          amountOutMin
           amount
           token
           bonderFee
