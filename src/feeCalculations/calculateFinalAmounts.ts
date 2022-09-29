@@ -144,7 +144,7 @@ async function getFeeInUsd (
   costInAsset: BigNumber,
   symbol: string,
   decimals: number,
-  timestamp: number,
+  timestamp: number
 ): Promise<number> {
   const price = await getTokenPrice(db, symbol, timestamp)
   const formattedCost = formatUnits(costInAsset, decimals)

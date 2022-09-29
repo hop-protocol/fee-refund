@@ -5,6 +5,7 @@ import {
 } from '../constants'
 import { DbEntry, RpcUrls, Transfer } from '../types/interfaces'
 import { promiseQueue } from '../utils/promiseQueue'
+import { retry } from '../utils/retry'
 
 async function main (db: Level, rpcUrls: RpcUrls) {
   const initializedProviders = await getProviders(rpcUrls)
@@ -23,9 +24,10 @@ async function main (db: Level, rpcUrls: RpcUrls) {
           continue
         }
 
-        const tx = await initializedProviders[transfer.chain].getTransactionReceipt(transfer.hash)
+        const provider = initializedProviders[transfer.chain]
+        const tx = await retry(provider.getTransactionReceipt.bind(provider))(transfer.hash)
         if (!tx) {
-          throw new Error(`expected tx on chain "${transfer.chain}" for hash "${transfer.hash}"`)
+          throw new Error(`expected tx on chain "${transfer.chain}" for hash "${transfer.hash}". Got ${tx}`)
         }
         const gasUsed = tx.gasUsed.toString()
         const gasPrice = tx.effectiveGasPrice.toString()
