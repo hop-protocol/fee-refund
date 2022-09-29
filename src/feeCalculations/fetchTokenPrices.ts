@@ -16,6 +16,7 @@ const coinIds: { [key: string]: string } = {
   WBTC: 'wrapped-bitcoin',
   OP: 'optimism',
   HOP: 'hop-protocol',
+  SNX: 'havven'
 }
 
 const oneDay = 86400
