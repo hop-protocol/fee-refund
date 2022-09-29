@@ -9,7 +9,7 @@ import {
 } from '../constants'
 import { DbEntry, Transfer } from '../types/interfaces'
 
-export async function fetchHopTransfers (network: string, db: Level, refundChain: string, startTimestamp: number, chains: string[], chainIds: Record<string, number>, tokens: string[]) {
+export async function fetchHopTransfers (network: string, db: Level, refundChain: string, startTimestamp: number, chains: string[], chainIds: Record<string, number>, tokens: string[], endTimestamp?: number) {
   const refundChainId = chainIds[refundChain]
   await Promise.all(tokens.map(async (token) => {
     for (const chain of chains) {
@@ -22,7 +22,7 @@ export async function fetchHopTransfers (network: string, db: Level, refundChain
         }
       }
 
-      await fetchHopTransfersDb(network, db, token, chain, refundChainId, startTimestamp)
+      await fetchHopTransfersDb(network, db, token, chain, refundChainId, startTimestamp, endTimestamp)
     }
   }))
 }
@@ -33,12 +33,13 @@ export async function fetchHopTransfersDb (
   token: string,
   chain: string,
   refundChainId: number,
-  startTimestamp: number
+  startTimestamp: number,
+  endTimestamp?: number
 ): Promise<void> {
   let lastId = '0'
   let lastTimestamp = 0
   while (true) {
-    const data: any[] = await fetchHopTransferBatch(network, token, chain, lastId, refundChainId, startTimestamp)
+    const data: any[] = await fetchHopTransferBatch(network, token, chain, lastId, refundChainId, startTimestamp, endTimestamp)
 
     if (!data || data.length === 0) break
     lastId = data[data.length - 1].id
@@ -84,20 +85,22 @@ async function fetchHopTransferBatch (
   chain: string,
   lastId: string,
   refundChainId: number,
-  startTimestamp: number
+  startTimestamp: number,
+  endTimestamp: number = Math.floor((Date.now() / 1000))
 ) {
   let query : string
 
   if (chain === 'mainnet') {
     query = `
-      query Transfers($pageSize: Int, $lastId: ID, $token: String, $startTimestamp: Int) {
+      query Transfers($pageSize: Int, $lastId: ID, $token: String, $startTimestamp: Int, $endTimestamp: Int) {
         transfers: transferSentToL2S(
           first: $pageSize,
           where: {
             token: $token,
             destinationChainId: ${refundChainId}
             id_gt: $lastId,
-            timestamp_gte: $startTimestamp
+            timestamp_gte: $startTimestamp,
+            timestamp_lte: $endTimestamp
           },
           orderBy: id,
           orderDirection: asc
@@ -115,14 +118,15 @@ async function fetchHopTransferBatch (
     `
   } else {
     query = `
-      query Transfers($pageSize: Int, $lastId: ID, $token: String, $startTimestamp: Int) {
+      query Transfers($pageSize: Int, $lastId: ID, $token: String, $startTimestamp: Int, $endTimestamp: Int) {
         transfers: transferSents(
           first: $pageSize,
           where: {
             token: $token,
             destinationChainId: ${refundChainId}
             id_gt: $lastId,
-            timestamp_gte: $startTimestamp
+            timestamp_gte: $startTimestamp,
+            timestamp_lte: $endTimestamp
           },
           orderBy: id,
           orderDirection: asc
@@ -149,7 +153,8 @@ async function fetchHopTransferBatch (
       pageSize: PAGE_SIZE,
       lastId,
       token,
-      startTimestamp
+      startTimestamp,
+      endTimestamp
     }
   )
   return data ? data.transfers : []

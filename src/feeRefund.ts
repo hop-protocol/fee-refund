@@ -2,7 +2,7 @@ import Level from 'level-ts'
 import { FinalEntries, RpcUrls, Transfer } from './types/interfaces'
 import fetchExistingClaims from './seed/fetchExistingClaims'
 import { fetchHopTransfers } from './seed/fetchHopTransfers'
-import fetchOnChainData from './seed/fetchOnChainData'
+import { fetchOnChainData } from './seed/fetchOnChainData'
 import { calculateFinalAmounts, getRefundAmount } from './feeCalculations/calculateFinalAmounts'
 import { fetchAllTokenPrices } from './feeCalculations/fetchTokenPrices'
 
@@ -12,6 +12,7 @@ export type Config = {
   rpcUrls: RpcUrls,
   merkleRewardsContractAddress: string,
   startTimestamp: number,
+  endTimestamp?: number,
   refundPercentage: number,
   refundChain: string
   refundTokenSymbol: string
@@ -23,6 +24,7 @@ export class FeeRefund {
   rpcUrls: RpcUrls
   merkleRewardsContractAddress: string
   startTimestamp: number
+  endTimestamp: number | undefined
   refundPercentage: number
   refundChain: string
   refundTokenSymbol: string
@@ -34,13 +36,14 @@ export class FeeRefund {
   chainIds: Record<string, number>
 
   constructor (config: Config) {
-    const { network = 'mainnet', dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, refundPercentage, refundChain, refundTokenSymbol, maxRefundAmount = 100 } = config
+    const { network = 'mainnet', dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, endTimestamp, refundPercentage, refundChain, refundTokenSymbol, maxRefundAmount = 100 } = config
     const uniqueId: string = refundChain + startTimestamp.toString()
     this.network = network
     this.dbDir = dbDir + '/' + uniqueId
     this.rpcUrls = rpcUrls
     this.merkleRewardsContractAddress = merkleRewardsContractAddress
     this.startTimestamp = startTimestamp
+    this.endTimestamp = endTimestamp
     this.refundPercentage = refundPercentage
     this.refundChain = refundChain
     this.refundTokenSymbol = refundTokenSymbol
@@ -71,7 +74,9 @@ export class FeeRefund {
       'MATIC',
       'USDC',
       'USDT',
-      'DAI'
+      'DAI',
+      'HOP',
+      'SNX'
     ]
 
     if (network === 'goerli') {
@@ -103,12 +108,17 @@ export class FeeRefund {
       this.db = new Level(this.dbDir)
     }
 
+    const id = Date.now()
     console.log('fetching Hop transfers')
-    await fetchHopTransfers(this.network, this.db, this.refundChain, this.startTimestamp, this.chains, this.chainIds, this.tokens)
+    console.time('fetchHopTransfers ' + id)
+    await fetchHopTransfers(this.network, this.db, this.refundChain, this.startTimestamp, this.chains, this.chainIds, this.tokens, this.endTimestamp)
+    console.timeEnd('fetchHopTransfers ' + id)
     console.log('fetching on-chain data')
-    await fetchOnChainData(this.db, this.rpcUrls)
-    console.log('fetching existing claims')
-    await fetchExistingClaims(this.db, this.refundChain, this.merkleRewardsContractAddress, this.network)
+    console.time('fetchOnChainData ' + id)
+    await fetchOnChainData(this.db, this.rpcUrls, this.endTimestamp)
+    console.timeEnd('fetchOnChainData ' + id)
+    // console.log('fetching existing claims')
+    // await fetchExistingClaims(this.db, this.refundChain, this.merkleRewardsContractAddress, this.network)
   }
 
   public async calculateFees (endTimestamp: number): Promise<FinalEntries> {

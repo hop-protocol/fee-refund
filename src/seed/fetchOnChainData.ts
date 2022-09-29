@@ -7,7 +7,7 @@ import { DbEntry, RpcUrls, Transfer } from '../types/interfaces'
 import { promiseQueue } from '../utils/promiseQueue'
 import { retry } from '../utils/retry'
 
-async function main (db: Level, rpcUrls: RpcUrls) {
+export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestamp?: number) {
   const initializedProviders = await getProviders(rpcUrls)
   const iterator = db.iterate({ all: 'address::', keys: true })
   const fns : any[] = []
@@ -17,6 +17,12 @@ async function main (db: Level, rpcUrls: RpcUrls) {
 
       const transfers: Transfer[] = value.transfers
       for (const transfer of transfers) {
+        if (endTimestamp) {
+          if (transfer.timestamp > endTimestamp) {
+            continue
+          }
+        }
+
         // Do not make on-chain calls if the data already exists
         const isTransferPopulated = getIsTransferPopulated(transfer)
         if (isTransferPopulated) {
@@ -69,5 +75,3 @@ function getIsTransferPopulated (transfer: Transfer): boolean {
     typeof transfer.isAggregator !== 'undefined'
   )
 }
-
-export default main
