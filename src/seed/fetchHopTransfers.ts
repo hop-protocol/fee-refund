@@ -3,7 +3,6 @@ import getLastTimestamp from '../utils/getLastTimestamp'
 import getUrl from '../utils/getUrl'
 import queryFetch from '../utils/queryFetch'
 import {
-  ONE_DAY_SEC,
   PAGE_SIZE,
   subgraphs
 } from '../constants'
@@ -13,6 +12,7 @@ export async function fetchHopTransfers (network: string, db: Level, refundChain
   const refundChainId = chainIds[refundChain]
   await Promise.all(tokens.map(async (token) => {
     for (const chain of chains) {
+      /*
       const lastTimestamp = await getLastTimestamp(db, chain)
       if (lastTimestamp) {
         // Resync one day in order to catch any missed events
@@ -21,6 +21,7 @@ export async function fetchHopTransfers (network: string, db: Level, refundChain
           startTimestamp = oneDayBeforeLastTimestamp
         }
       }
+      */
 
       await fetchHopTransfersDb(network, db, token, chain, refundChainId, startTimestamp, endTimestamp)
     }

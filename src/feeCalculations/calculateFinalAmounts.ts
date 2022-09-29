@@ -13,11 +13,13 @@ export async function calculateFinalAmounts (
   db: Level,
   refundPercentage: number,
   refundTokenSymbol: string,
+  startTimestamp: number,
   endTimestamp: number,
   maxRefundAmount: number
 ): Promise<FinalEntries> {
   const finalEntries: FinalEntries = {}
   const iterator = db.iterate({ all: 'address::', keys: true })
+  let count = 0
   for await (const { key, value } of iterator) {
     const dbEntry: DbEntry = value
     const address = dbEntry.address
@@ -28,7 +30,8 @@ export async function calculateFinalAmounts (
     for (const transfer of transfers) {
       if (
         transfer.isAggregator ||
-        transfer.timestamp > endTimestamp
+        transfer.timestamp > endTimestamp ||
+        transfer.timestamp < startTimestamp
       ) {
         // console.log(transfer.chain, transfer.hash, transfer.timestamp, endTimestamp)
         continue
@@ -38,6 +41,7 @@ export async function calculateFinalAmounts (
 
       amount = amount.add(refundAmountAfterDiscountWei)
       // console.log(`done processing dbEntry ${address}`)
+      count++
     }
 
     if (amount.toString() !== '0') {
@@ -45,6 +49,8 @@ export async function calculateFinalAmounts (
       finalEntries[address] = amount.toString()
     }
   }
+
+  console.log(`calculateFinalAmounts count: ${count}, endTimestamp: ${endTimestamp}`)
 
   return finalEntries
 }

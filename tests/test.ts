@@ -20,8 +20,10 @@ describe('Fee Refund', () => {
   }
   const merkleRewardsContractAddress = '0x45269F59aA76bB491D0Fc4c26F468D8E1EE26b73' // optimism
   // const merkleRewardsContractAddress = '0x9dC2d609487Be9F1dDc54b0C242847114f337501' // goerli
-  const startTimestamp = 1664394859 // Math.floor(Date.now() / 1000) - (24 * 60 * 60)
-  const endTimestamp = startTimestamp + (8 * 60 * 60)
+  const startTimestamp = 1663898400 // Math.floor(Date.now() / 1000) - (24 * 60 * 60)
+  const endTimestamp = 1664478474 // startTimestamp + (60 * 60 * 24)
+  console.log('startTimestamp:', startTimestamp)
+  console.log('endTimestamp:', endTimestamp)
   const refundPercentage = 0.8
   const refundChain = chainSlugs.optimism
   const refundTokenSymbol = process.env.REFUND_TOKEN_SYMBOL
@@ -43,7 +45,7 @@ describe('Fee Refund', () => {
   })
 
   test('Calculate Op rewards', async () => {
-    const endTimestamp = 1664412859 // Math.floor(Date.now() / 1000)
+    const endTimestamp = 1664478474 // Math.floor(Date.now() / 1000)
     const refunds = await feeRefund.calculateFees(endTimestamp)
     console.log(refunds)
     expect(typeof refunds).toBe('object')
@@ -53,7 +55,8 @@ describe('Fee Refund', () => {
       sum = sum.add(BigNumber.from(refunds[addr]))
     }
 
-    expect(sum.toString()).toBe('125371800862637787164')
+    console.log('sum:', sum.toString())
+    expect(sum.toString()).toBe('4800952393681655324338')
   })
 
   test('fee refund amount', async () => {

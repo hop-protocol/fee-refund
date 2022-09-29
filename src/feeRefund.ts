@@ -130,7 +130,7 @@ export class FeeRefund {
     await fetchAllTokenPrices(this.db)
     console.log('done fetching token prices')
     console.log('calculating final amounts')
-    const result = await calculateFinalAmounts(this.db, this.refundPercentage, this.refundTokenSymbol, endTimestamp, this.maxRefundAmount)
+    const result = await calculateFinalAmounts(this.db, this.refundPercentage, this.refundTokenSymbol, this.startTimestamp, endTimestamp, this.maxRefundAmount)
     console.log('done calculating final amounts')
     return result
   }

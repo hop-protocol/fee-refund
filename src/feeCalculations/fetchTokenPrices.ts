@@ -19,8 +19,6 @@ const coinIds: { [key: string]: string } = {
   SNX: 'havven'
 }
 
-const oneDay = 86400
-
 export const fetchAllTokenPrices = async (db: Level) => {
   const tokens = Object.keys(coinIds)
   await Promise.all(tokens.map(async (token) => {
