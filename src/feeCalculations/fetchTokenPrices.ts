@@ -75,19 +75,35 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
     throw new Error('getTokenPrice: expected timestamp')
   }
 
-  const date = DateTime.fromSeconds(timestamp).toUTC().startOf('day').toSeconds()
-  const key = getKey(tokenSymbol, date)
-  const res = await db.get(key)
+  const dt = DateTime.fromSeconds(timestamp).toUTC().startOf('day')
+  const ts = dt.toSeconds()
+  const key = getKey(tokenSymbol, ts)
   let price : any
-  if (res) {
-    price = res.price
+  try {
+    const res = await db.get(key)
+    if (res) {
+      price = res.price
+    }
+  } catch (err) {
+  }
+
+  if (!price) {
+    try {
+      const ts = dt.minus({ days: 1 }).toSeconds()
+      const key = getKey(tokenSymbol, ts)
+      const res = await db.get(key)
+      if (res) {
+        price = res.price
+      }
+    } catch (err) {
+    }
   }
 
   if (!price) {
     throw new Error(`getTokenPrice: no price found for key ${key}`)
   }
 
-  console.log('price:', tokenSymbol, price, timestamp)
+  // console.log('price:', tokenSymbol, price, timestamp)
 
   return price
 }
