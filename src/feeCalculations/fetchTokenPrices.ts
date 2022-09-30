@@ -32,7 +32,8 @@ export const fetchAllTokenPrices = async (db: Level) => {
       const price = data[1]
 
       const key = getKey(token, timestamp)
-      await db.put(key, { timestamp, price })
+      const date = DateTime.fromSeconds(timestamp).toUTC().startOf('day').toSeconds()
+      await db.put(key, { timestamp: date, price })
     }
   }))
 }
@@ -73,32 +74,20 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
   if (!timestamp) {
     throw new Error('getTokenPrice: expected timestamp')
   }
-  const lowerBoundTimestamp = DateTime.fromSeconds(timestamp).toUTC().startOf('day').minus({ days: 1 }).toSeconds()
-  const upperBoundTimestamp = DateTime.fromSeconds(timestamp).toUTC().startOf('day').toSeconds()
 
-  const lowerBoundKey = getKey(tokenSymbol, lowerBoundTimestamp)
-  const upperBoundKey = getKey(tokenSymbol, upperBoundTimestamp)
-
-  const results = await db.stream({
-    gte: lowerBoundKey,
-    lte: upperBoundKey
-  })
-
-  let lowestDiff: number = Number.MAX_SAFE_INTEGER
+  const date = DateTime.fromSeconds(timestamp).toUTC().startOf('day').toSeconds()
+  const key = getKey(tokenSymbol, date)
+  const res = await db.get(key)
   let price : any
-  for (const i in results) {
-    const res = results[i].value
-
-    const diff = Math.abs(res.timestamp - timestamp)
-    if (diff < lowestDiff) {
-      lowestDiff = diff
-      price = res.price
-    }
+  if (res) {
+    price = res.price
   }
 
   if (!price) {
-    throw new Error(`getTokenPrice: no price found for key ${lowerBoundKey}`)
+    throw new Error(`getTokenPrice: no price found for key ${key}`)
   }
+
+  console.log('price:', tokenSymbol, price, timestamp)
 
   return price
 }
