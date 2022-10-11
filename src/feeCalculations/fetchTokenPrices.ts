@@ -21,21 +21,25 @@ const coinIds: { [key: string]: string } = {
 
 export const fetchAllTokenPrices = async (db: Level) => {
   const tokens = Object.keys(coinIds)
-  await Promise.all(tokens.map(async (token) => {
-    const res: any = await retry(fetchTokenPrices)(token)
-    if (!res) {
-      throw new Error('no response')
-    }
+  for (const token of tokens) {
+    try {
+      const res: any = await retry(fetchTokenPrices)(token)
+      if (!res) {
+        throw new Error('no response')
+      }
 
-    for (const data of res) {
-      const timestamp = toSeconds(data[0])
-      const price = data[1]
+      for (const data of res) {
+        const timestamp = toSeconds(data[0])
+        const price = data[1]
 
-      const key = getKey(token, timestamp)
-      const date = DateTime.fromSeconds(timestamp).toUTC().startOf('day').toSeconds()
-      await db.put(key, { timestamp: date, price })
+        const key = getKey(token, timestamp)
+        const date = DateTime.fromSeconds(timestamp).toUTC().startOf('day').toSeconds()
+        await db.put(key, { timestamp: date, price })
+      }
+    } catch (err) {
+      console.error('fetchAllTokenPrices error:', err)
     }
-  }))
+  }
 }
 
 const fetchTokenPrices = async (tokenSymbol: string) => {
