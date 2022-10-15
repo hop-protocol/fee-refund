@@ -139,7 +139,6 @@ export class FeeRefund {
     if (!this.db) {
       this.db = new Level(this.dbDir)
     }
-    await fetchAllTokenPrices(this.db)
     return getRefundAmount(this.db, transfer, this.refundTokenSymbol, this.refundPercentage, this.maxRefundAmount)
   }
 }
