@@ -4,7 +4,7 @@ import fetchExistingClaims from './seed/fetchExistingClaims'
 import { fetchHopTransfers } from './seed/fetchHopTransfers'
 import { fetchOnChainData } from './seed/fetchOnChainData'
 import { calculateFinalAmounts, getRefundAmount } from './feeCalculations/calculateFinalAmounts'
-import { fetchAllTokenPrices } from './feeCalculations/fetchTokenPrices'
+import { fetchAllTokenPrices, getTokenPrice } from './feeCalculations/fetchTokenPrices'
 
 export type Config = {
   network?: string,
@@ -140,5 +140,12 @@ export class FeeRefund {
       this.db = new Level(this.dbDir)
     }
     return getRefundAmount(this.db, transfer, this.refundTokenSymbol, this.refundPercentage, this.maxRefundAmount)
+  }
+
+  public async getTokenPrice (tokenSymbol: string, timestamp: number): Promise<any> {
+    if (!this.db) {
+      this.db = new Level(this.dbDir)
+    }
+    return getTokenPrice(this.db, tokenSymbol, timestamp)
   }
 }

@@ -76,4 +76,13 @@ describe('Fee Refund', () => {
     expect(typeof refund).toBe('object')
     expect(refund.totalUsdCost).toBe(2.216696366845233)
   })
+
+  test('getTokenPrice', async () => {
+    const token = 'ETH'
+    const timestamp = 1664478474
+    const tokenPrice = await feeRefund.getTokenPrice(token, timestamp)
+    console.log(tokenPrice)
+    expect(typeof tokenPrice).toBe('number')
+    expect(tokenPrice).toBeGreaterThan(0)
+  })
 })
