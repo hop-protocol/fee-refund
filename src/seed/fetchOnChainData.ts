@@ -40,7 +40,7 @@ export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestam
           tx = await retry(provider.getTransactionReceipt.bind(provider))(transfer.hash)
           if (!tx) {
             console.error('error provider:', provider)
-            throw new Error(`expected tx on chain "${transfer.chain}" for hash "${transfer.hash}". Got ${tx}`)
+            throw new Error(`expected tx on chain "${transfer.chain}" for hash "${transfer.hash}". Got ${tx}. This means that the rpc provider being used did not return a transaction. Please try again or use a different rpc provider.`)
           }
         }
         const gasUsed = tx.gasUsed.toString()
