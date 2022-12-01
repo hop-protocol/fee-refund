@@ -1,6 +1,5 @@
 import Level from 'level-ts'
 import { FinalEntries, RpcUrls, Transfer } from './types/interfaces'
-import fetchExistingClaims from './seed/fetchExistingClaims'
 import { fetchHopTransfers } from './seed/fetchHopTransfers'
 import { fetchOnChainData } from './seed/fetchOnChainData'
 import { calculateFinalAmounts, getRefundAmount } from './feeCalculations/calculateFinalAmounts'
@@ -117,8 +116,6 @@ export class FeeRefund {
     console.time('fetchOnChainData ' + id)
     await fetchOnChainData(this.db, this.rpcUrls, this.endTimestamp)
     console.timeEnd('fetchOnChainData ' + id)
-    // console.log('fetching existing claims')
-    // await fetchExistingClaims(this.db, this.refundChain, this.merkleRewardsContractAddress, this.network)
   }
 
   public async calculateFees (endTimestamp: number): Promise<FinalEntries> {

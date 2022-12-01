@@ -89,6 +89,7 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
       price = res.price
     }
   } catch (err) {
+    console.log('getTokenPrice error1:', tokenSymbol, err.message)
   }
 
   if (!price) {
@@ -100,6 +101,7 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
         price = res.price
       }
     } catch (err) {
+      console.log('getTokenPrice error2:', tokenSymbol, err.message)
     }
   }
 
