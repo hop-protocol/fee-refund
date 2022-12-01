@@ -81,7 +81,7 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
 
   const dt = DateTime.fromSeconds(timestamp).toUTC().startOf('day')
   const ts = dt.toSeconds()
-  const key = getKey(tokenSymbol, ts)
+  let key = getKey(tokenSymbol, ts)
   let price : any
   try {
     const res = await db.get(key)
@@ -94,8 +94,9 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
 
   if (!price) {
     try {
+      console.log('no price found for key ', key, ', getting price from 1 day ago')
       const ts = dt.minus({ days: 1 }).toSeconds()
-      const key = getKey(tokenSymbol, ts)
+      key = getKey(tokenSymbol, ts)
       const res = await db.get(key)
       if (res) {
         price = res.price
