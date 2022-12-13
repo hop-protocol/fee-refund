@@ -10,7 +10,7 @@ import { DbEntry, Transfer } from '../types/interfaces'
 
 export async function fetchHopTransfers (network: string, db: Level, refundChain: string, startTimestamp: number, chains: string[], chainIds: Record<string, number>, tokens: string[], endTimestamp?: number) {
   const refundChainId = chainIds[refundChain]
-  await Promise.all(tokens.map(async (token) => {
+  for (const token of tokens) {
     for (const chain of chains) {
       /*
       const lastTimestamp = await getLastTimestamp(db, chain)
@@ -25,7 +25,7 @@ export async function fetchHopTransfers (network: string, db: Level, refundChain
 
       await fetchHopTransfersDb(network, db, token, chain, refundChainId, startTimestamp, endTimestamp)
     }
-  }))
+  }
 }
 
 export async function fetchHopTransfersDb (
