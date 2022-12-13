@@ -7,6 +7,7 @@ import { DbEntry, RpcUrls, Transfer } from '../types/interfaces'
 import { promiseQueue } from '../utils/promiseQueue'
 import { retry } from '../utils/retry'
 import wait from 'wait'
+import { promiseQueueConcurrency } from '../config'
 
 export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestamp?: number) {
   const initializedProviders = await getProviders(rpcUrls)
@@ -64,7 +65,7 @@ export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestam
 
   await promiseQueue(fns, async (fn: any) => {
     await fn()
-  }, { concurrency: 100 })
+  }, { concurrency: promiseQueueConcurrency })
 }
 
 async function getProviders (rpcUrls: RpcUrls): Promise<Record<string, any>> {

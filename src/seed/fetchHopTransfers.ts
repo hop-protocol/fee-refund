@@ -1,5 +1,4 @@
 import Level from 'level-ts'
-import getLastTimestamp from '../utils/getLastTimestamp'
 import getUrl from '../utils/getUrl'
 import queryFetch from '../utils/queryFetch'
 import {
@@ -12,17 +11,6 @@ export async function fetchHopTransfers (network: string, db: Level, refundChain
   const refundChainId = chainIds[refundChain]
   for (const token of tokens) {
     for (const chain of chains) {
-      /*
-      const lastTimestamp = await getLastTimestamp(db, chain)
-      if (lastTimestamp) {
-        // Resync one day in order to catch any missed events
-        const oneDayBeforeLastTimestamp = lastTimestamp - ONE_DAY_SEC
-        if (oneDayBeforeLastTimestamp > startTimestamp) {
-          startTimestamp = oneDayBeforeLastTimestamp
-        }
-      }
-      */
-
       await fetchHopTransfersDb(network, db, token, chain, refundChainId, startTimestamp, endTimestamp)
     }
   }
