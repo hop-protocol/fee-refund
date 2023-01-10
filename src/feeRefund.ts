@@ -143,6 +143,7 @@ export class FeeRefund {
     if (!this.db) {
       this.db = new Level(this.dbDir)
     }
+
     return getRefundAmount(this.db, transfer, this.refundTokenSymbol, this.refundPercentage, this.maxRefundAmount)
   }
 
@@ -150,6 +151,7 @@ export class FeeRefund {
     if (!this.db) {
       this.db = new Level(this.dbDir)
     }
+
     return getTokenPrice(this.db, tokenSymbol, timestamp)
   }
 
@@ -157,6 +159,7 @@ export class FeeRefund {
     if (!this.db) {
       this.db = new Level(this.dbDir)
     }
+
     return getAccountHistory(this.db, account, this.refundTokenSymbol, this.refundPercentage, this.maxRefundAmount)
   }
 }
