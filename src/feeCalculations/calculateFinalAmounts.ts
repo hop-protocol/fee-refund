@@ -20,35 +20,41 @@ export async function calculateFinalAmounts (
   const finalEntries: FinalEntries = {}
   const iterator = db.iterate({ all: 'address::', keys: true })
   let count = 0
+  const promises : any[] = []
   for await (const { key, value } of iterator) {
-    const dbEntry: DbEntry = value
-    const address = dbEntry.address
-    // console.log(`processing dbEntry ${address}`)
-    const transfers: Transfer[] = dbEntry.transfers
+    promises.push(new Promise(async (resolve) => {
+      const dbEntry: DbEntry = value
+      const address = dbEntry.address
+      // console.log(`processing dbEntry ${address}`)
+      const transfers: Transfer[] = dbEntry.transfers
 
-    let amount: BigNumber = BigNumber.from('0')
-    for (const transfer of transfers) {
-      if (
-        transfer.isAggregator ||
-        transfer.timestamp > endTimestamp ||
-        transfer.timestamp < startTimestamp
-      ) {
-        // console.log(transfer.chain, transfer.hash, transfer.timestamp, endTimestamp)
-        continue
+      let amount: BigNumber = BigNumber.from('0')
+      for (const transfer of transfers) {
+        if (
+          transfer.isAggregator ||
+          transfer.timestamp > endTimestamp ||
+          transfer.timestamp < startTimestamp
+        ) {
+          // console.log(transfer.chain, transfer.hash, transfer.timestamp, endTimestamp)
+          continue
+        }
+
+        const { refundAmountAfterDiscountWei } = await getRefundAmount(db, transfer, refundTokenSymbol, refundPercentage, maxRefundAmount)
+
+        amount = amount.add(refundAmountAfterDiscountWei)
+        // console.log(`done processing dbEntry ${address}`)
+        count++
       }
 
-      const { refundAmountAfterDiscountWei } = await getRefundAmount(db, transfer, refundTokenSymbol, refundPercentage, maxRefundAmount)
-
-      amount = amount.add(refundAmountAfterDiscountWei)
-      // console.log(`done processing dbEntry ${address}`)
-      count++
-    }
-
-    if (amount.toString() !== '0') {
-      amount = amount.sub(value.amountClaimed)
-      finalEntries[address] = amount.toString()
-    }
+      if (amount.toString() !== '0') {
+        amount = amount.sub(value.amountClaimed)
+        finalEntries[address] = amount.toString()
+      }
+      resolve(null)
+    }))
   }
+
+  await Promise.all(promises)
 
   console.log(`calculateFinalAmounts count: ${count}, endTimestamp: ${endTimestamp}`)
 
