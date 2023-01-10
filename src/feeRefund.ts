@@ -18,6 +18,10 @@ export type Config = {
   maxRefundAmount: number
 }
 
+export type SeedOptions = {
+  hopTransfersStartTime?: number
+}
+
 export class FeeRefund {
   dbDir: string
   rpcUrls: RpcUrls
@@ -102,15 +106,17 @@ export class FeeRefund {
     }
   }
 
-  public async seed (): Promise<void> {
+  public async seed (options: SeedOptions = {}): Promise<void> {
     if (!this.db) {
       this.db = new Level(this.dbDir)
     }
 
+    const hopTransfersStartTime = options?.hopTransfersStartTime ?? this.startTimestamp
+
     const id = Date.now()
     console.log('fetching Hop transfers')
     console.time('fetchHopTransfers ' + id)
-    await fetchHopTransfers(this.network, this.db, this.refundChain, this.startTimestamp, this.chains, this.chainIds, this.tokens, this.endTimestamp)
+    await fetchHopTransfers(this.network, this.db, this.refundChain, hopTransfersStartTime, this.chains, this.chainIds, this.tokens, this.endTimestamp)
     console.timeEnd('fetchHopTransfers ' + id)
     console.log('fetching on-chain data')
     console.time('fetchOnChainData ' + id)
