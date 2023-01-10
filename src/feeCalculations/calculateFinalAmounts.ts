@@ -28,8 +28,11 @@ export async function calculateFinalAmounts (
       // console.log(`processing dbEntry ${address}`)
       const transfers: Transfer[] = dbEntry.transfers
 
-      let amount: BigNumber = BigNumber.from('0')
+      let amount: BigNumber = BigNumber.from(0)
       for (const transfer of transfers) {
+        if (!transfer) {
+          throw new Error('calculateFinalAmounts: expected transfer')
+        }
         if (
           transfer.isAggregator ||
           transfer.timestamp > endTimestamp ||
@@ -47,7 +50,7 @@ export async function calculateFinalAmounts (
       }
 
       if (amount.toString() !== '0') {
-        amount = amount.sub(value.amountClaimed)
+        amount = amount.sub(value.amountClaimed ?? 0)
         finalEntries[address] = amount.toString()
       }
       resolve(null)
@@ -61,7 +64,7 @@ export async function calculateFinalAmounts (
   return finalEntries
 }
 
-export async function getRefundAmount (db: Level, transfer: Transfer, refundTokenSymbol: string, refundPercentage: number, maxRefundAmount): Promise<any> {
+export async function getRefundAmount (db: Level, transfer: Transfer, refundTokenSymbol: string, refundPercentage: number, maxRefundAmount: number): Promise<any> {
   // Calculate total amount
   const {
     sourceTxCostUsd,
@@ -93,11 +96,22 @@ export async function getRefundAmount (db: Level, transfer: Transfer, refundToke
 }
 
 async function getUsdCost (db: Level, transfer: Transfer): Promise<any> {
+  if (!transfer) {
+    throw new Error('gasUsdCost: expected transfer')
+  }
   // Source tx fee
   let txCost = BigNumber.from(0)
   if (transfer.gasCost) {
     txCost = BigNumber.from(transfer.gasCost)
   } else {
+    if (!transfer.gasUsed) {
+      console.log(transfer)
+      throw new Error('gasUsdCost: expected gasUsed')
+    }
+    if (!transfer.gasPrice) {
+      console.log(transfer)
+      throw new Error('gasUsdCost: expected gasPrice')
+    }
     const gasUsed = BigNumber.from(transfer.gasUsed!)
     const gasPrice = BigNumber.from(transfer.gasPrice!)
     txCost = gasUsed.mul(gasPrice)
