@@ -85,4 +85,12 @@ describe('Fee Refund', () => {
     expect(typeof tokenPrice).toBe('number')
     expect(tokenPrice).toBeGreaterThan(0)
   })
+
+  test('getAccountHistory', async () => {
+    const account = '0xf2eacf4142c3135441070fe73927b86ad5d42a04'
+    const transfers = await feeRefund.getAccountHistory(account)
+    console.log(transfers)
+    expect(transfers.length).toBeGreaterThan(0)
+    expect(transfers[0].refund).toBeTruthy()
+  })
 })
