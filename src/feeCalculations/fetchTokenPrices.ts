@@ -25,16 +25,44 @@ export const fetchAllTokenPrices = async (db: Level) => {
     try {
       const res: any = await retry(fetchTokenPrices)(token)
       if (!res) {
-        throw new Error('no response')
+        throw new Error('fetchAllTokenPrices: no response')
       }
+
+      if (!res?.length) {
+        throw new Error('fetchAllTokenPrices: expected array items')
+      }
+
+      let hasPriceForToday = false
 
       for (const data of res) {
         const timestamp = toSeconds(data[0])
         const price = data[1]
 
-        const key = getKey(token, timestamp)
-        const date = DateTime.fromSeconds(timestamp).toUTC().startOf('day').toSeconds()
-        await db.put(key, { timestamp: date, price })
+        const startUnix = DateTime.fromSeconds(timestamp).toUTC().startOf('day').toSeconds()
+        const nowUnix = DateTime.now().toUTC().startOf('day').toSeconds()
+        if (startUnix === nowUnix) {
+          hasPriceForToday = true
+        }
+        const key = getKey(token, startUnix)
+        // console.log('put price', key, startUnix, price)
+        await db.put(key, { timestamp: startUnix, price })
+      }
+
+      try {
+        if (!hasPriceForToday) {
+          const startUnix = DateTime.now().toUTC().startOf('day').toSeconds()
+          // console.log('NoTodayPrice:', token, startUnix)
+
+          const yesterdayUnix = DateTime.now().toUTC().startOf('day').minus({ days: 1 }).toSeconds()
+          const res = await db.get(getKey(token, yesterdayUnix))
+          if (res?.price) {
+            // console.log('setting today price as yesterday price until api returns today price')
+            const key = getKey(token, startUnix)
+            const price = res.price
+            await db.put(key, { timestamp: startUnix, price })
+          }
+        }
+      } catch (err) {
       }
     } catch (err) {
       console.error('fetchAllTokenPrices error:', err)
