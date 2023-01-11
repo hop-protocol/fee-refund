@@ -110,6 +110,15 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
     throw new Error(`getTokenPrice: no price found for key ${key}`)
   }
 
+  // to prevent breaking previous merkle rewards roots when verifying,
+  // we only truncate decimals after a certain date.
+  // the reason for truncating decimals is to keep the price simple
+  // and avoid minor discrepancies in price when quering api on different days.
+  const truncateAfterTimestamp = 1673481600 // 2023-01-12
+  if (timestamp >= truncateAfterTimestamp) {
+    price = Number(price.toFixed(2))
+  }
+
   // console.log('price:', tokenSymbol, price, timestamp)
 
   return price
