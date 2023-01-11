@@ -77,9 +77,20 @@ export async function getRefundAmount (db: Level, transfer: Transfer, refundToke
 
   // Apply refund discount
   const decimals = tokenDecimals[refundTokenSymbol]
-  const refundAmountAfterDiscount = Math.min(refundAmount * refundPercentage, maxRefundAmount)
-  const refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toFixed(decimals), decimals)
-  const refundAmountAfterDiscountUsd = refundAmountAfterDiscount * price
+  let refundAmountAfterDiscount = Math.min(refundAmount * refundPercentage, maxRefundAmount)
+  let refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toFixed(decimals), decimals)
+  let refundAmountAfterDiscountUsd = refundAmountAfterDiscount * price
+
+  // to prevent breaking previous merkle rewards roots when verifying,
+  // we only truncate decimals after a certain date.
+  // the reason for truncating decimals is to keep the price simple
+  // and avoid minor discrepancies when rounding.
+  const truncateAfterTimestamp = 1673049600 // 2023-01-07
+  if (transfer.timestamp >= truncateAfterTimestamp) {
+    refundAmountAfterDiscount = Number(Math.min(refundAmount * refundPercentage, maxRefundAmount).toFixed(2))
+    refundAmountAfterDiscountWei = parseUnits(refundAmountAfterDiscount.toString(), decimals)
+    refundAmountAfterDiscountUsd = Number((refundAmountAfterDiscount * price).toFixed(2))
+  }
 
   return {
     totalUsdCost,
@@ -174,5 +185,16 @@ async function getFeeInUsd (
 ): Promise<number> {
   const price = await getTokenPrice(db, symbol, timestamp)
   const formattedCost = formatUnits(costInAsset, decimals)
-  return Number(formattedCost) * price
+  let result = Number(formattedCost) * price
+
+  // to prevent breaking previous merkle rewards roots when verifying,
+  // we only truncate decimals after a certain date.
+  // the reason for truncating decimals is to keep the price simple
+  // and avoid minor discrepancies when rounding.
+  const truncateAfterTimestamp = 1673049600 // 2023-01-07
+  if (timestamp >= truncateAfterTimestamp) {
+    result = Number(result.toFixed(2))
+  }
+
+  return result
 }
