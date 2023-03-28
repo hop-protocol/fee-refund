@@ -46,7 +46,11 @@ export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestam
         }
         const gasUsed = tx.gasUsed.toString()
         const gasPrice = tx.effectiveGasPrice.toString()
-        const isAggregator = aggregatorAddresses[tx.to.toLowerCase()] || false
+        const aggregatorTimestamp = aggregatorAddresses[tx.to.toLowerCase()]
+        let isAggregator = false
+        if (aggregatorTimestamp && aggregatorTimestamp < transfer.timestamp) {
+          isAggregator = true
+        }
 
         const entry = Object.assign({ gasUsed, gasPrice, isAggregator }, transfer)
         allTransfers.push(entry)
