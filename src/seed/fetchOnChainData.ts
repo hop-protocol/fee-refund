@@ -8,6 +8,7 @@ import { promiseQueue } from '../utils/promiseQueue'
 import { retry } from '../utils/retry'
 import wait from 'wait'
 import { promiseQueueConcurrency } from '../config'
+import { isHopContract } from '../utils/isHopContract'
 
 export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestamp?: number) {
   const initializedProviders = await getProviders(rpcUrls)
@@ -50,6 +51,14 @@ export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestam
         let isAggregator = false
         if (aggregatorTimestamp && aggregatorTimestamp < transfer.timestamp) {
           isAggregator = true
+        }
+
+        // we started excluding any transfers that weren't made directly to the hop contracts
+        // stating from this date
+        const isHopContractTimestamp = 1684627200
+        if (!isAggregator && transfer.timestamp > isHopContractTimestamp) {
+          const isToHopDirectly = isHopContract(tx.to)
+          isAggregator = !isToHopDirectly
         }
 
         const entry = Object.assign({ gasUsed, gasPrice, isAggregator }, transfer)
