@@ -27,8 +27,6 @@ function getUrl (network: string, chain: string, subgraph: string) {
       }
     }
     return `https://api.thegraph.com/subgraphs/name/hop-protocol/hop-${chain}`
-  } else if (subgraph === subgraphs.merkleRewards) {
-    return 'https://api.thegraph.com/subgraphs/name/shanefontaine/merkle-rewards'
   } else {
     throw new Error('Unknown subgraph type')
   }

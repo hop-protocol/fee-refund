@@ -38,10 +38,14 @@ export class FeeRefund {
   chains: string[]
   tokens: string[]
   chainIds: Record<string, number>
+  migrated: boolean = false
 
   constructor (config: Config) {
     const { network = 'mainnet', dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, endTimestamp, refundPercentage, refundChain, refundTokenSymbol, maxRefundAmount = 100 } = config
-    const uniqueId: string = refundChain + startTimestamp.toString()
+    if (!startTimestamp) {
+      // throw new Error('startTimestamp is required')
+    }
+    const uniqueId: string = refundChain + startTimestamp?.toString()
     this.network = network
     this.dbDir = dbDir + '/' + uniqueId
     this.rpcUrls = rpcUrls
@@ -161,5 +165,56 @@ export class FeeRefund {
     }
 
     return getAccountHistory(this.db, account, this.refundTokenSymbol, this.refundPercentage, this.maxRefundAmount)
+  }
+
+  public getDb () {
+    if (!this.db) {
+      this.db = new Level(this.dbDir)
+    }
+
+    return this.db
+  }
+
+  async getTxInfo (chain: string, hash: string) {
+    if (!this.db) {
+      this.db = new Level(this.dbDir)
+    }
+
+    const key = `tx::${chain}:${hash}`
+    try {
+      const result = await this.db.get(key)
+      return result
+    } catch (err) {
+      if (!/Key not found/gi.test(err.message)) {
+        throw err
+      }
+    }
+    return null
+  }
+
+  async migrate () {
+    if (!this.db) {
+      this.db = new Level(this.dbDir)
+    }
+
+    if (this.migrated) {
+      return
+    }
+
+    const iterator = this.db.iterate({ all: 'address::', keys: true })
+    for await (const { key, value } of iterator) {
+      if (value) {
+        if (Array.isArray(value.transfers)) {
+          for (const transfer of value.transfers) {
+            const { chain, hash } = transfer
+            const txKey = `tx::${chain}:${hash}`
+            await this.db.put(txKey, transfer)
+          }
+        }
+      }
+    }
+
+    this.migrated = true
+    console.log('done running migration')
   }
 }

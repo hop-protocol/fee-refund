@@ -164,6 +164,5 @@ export const hopContracts: Record<string, Record<string, number>> = {
 }
 
 export const subgraphs: Record<string, string> = {
-  hopBridge: 'hopBridge',
-  merkleRewards: 'merkleRewards'
+  hopBridge: 'hopBridge'
 }

@@ -62,6 +62,10 @@ export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestam
         }
 
         const entry = Object.assign({ gasUsed, gasPrice, isAggregator }, transfer)
+
+        const txKey = `tx::${transfer.chain}:${transfer.hash}`
+        await db.put(txKey, entry)
+
         allTransfers.push(entry)
       }
 
