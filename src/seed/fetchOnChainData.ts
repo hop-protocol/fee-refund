@@ -50,7 +50,7 @@ export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestam
               }
             }
           } catch (err: any) {
-            console.error('api fetch error:', err)
+            // console.error('api fetch error:', err)
           }
         }
 
