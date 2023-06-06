@@ -7,7 +7,7 @@ import { DbEntry, RpcUrls, Transfer } from '../types/interfaces'
 import { promiseQueue } from '../utils/promiseQueue'
 import { retry } from '../utils/retry'
 import wait from 'wait'
-import { promiseQueueConcurrency } from '../config'
+import { promiseQueueConcurrency, config } from '../config'
 import { isHopContract } from '../utils/isHopContract'
 
 export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestamp?: number) {
@@ -33,32 +33,54 @@ export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestam
           continue
         }
 
-        const provider = initializedProviders[transfer.chain]
-        let tx = await retry(provider.getTransactionReceipt.bind(provider))(transfer.hash)
-        if (!tx) {
-          // retry
-          await wait(2 * 1000)
-          console.log('retrying request')
-          tx = await retry(provider.getTransactionReceipt.bind(provider))(transfer.hash)
-          if (!tx) {
-            console.error('error provider:', provider)
-            throw new Error(`expected tx on chain "${transfer.chain}" for hash "${transfer.hash}". Got ${tx}. This means that the rpc provider being used did not return a transaction. Please try again or use a different rpc provider.`)
+        let gasUsed : string
+        let gasPrice : string
+        let isAggregator = false
+        if (config.useApiForOnChainData) {
+          try {
+            const url = `https://optimism-fee-refund-api.hop.exchange/v1/tx-info?chain=${transfer.chain}&hash=${transfer.hash}`
+            const response = await fetch(url)
+            const json = await response.json()
+            const txInfo = json?.data
+            if (txInfo) {
+              if (txInfo) {
+                gasUsed = txInfo.gasUsed
+                gasPrice = txInfo.gasPrice
+                isAggregator = txInfo.isAggregator
+              }
+            }
+          } catch (err: any) {
+            console.error('api fetch error:', err)
           }
         }
-        const gasUsed = tx.gasUsed.toString()
-        const gasPrice = tx.effectiveGasPrice.toString()
-        const aggregatorTimestamp = aggregatorAddresses[tx.to.toLowerCase()]
-        let isAggregator = false
-        if (aggregatorTimestamp && aggregatorTimestamp < transfer.timestamp) {
-          isAggregator = true
-        }
 
-        // we started excluding any transfers that weren't made directly to the hop contracts
-        // stating from this date
-        const isHopContractTimestamp = 1684627200
-        if (!isAggregator && transfer.timestamp > isHopContractTimestamp) {
-          const isToHopDirectly = isHopContract(tx.to)
-          isAggregator = !isToHopDirectly
+        if (!gasUsed || !gasPrice) {
+          const provider = initializedProviders[transfer.chain]
+          let tx = await retry(provider.getTransactionReceipt.bind(provider))(transfer.hash)
+          if (!tx) {
+            // retry
+            await wait(2 * 1000)
+            console.log('retrying request')
+            tx = await retry(provider.getTransactionReceipt.bind(provider))(transfer.hash)
+            if (!tx) {
+              console.error('error provider:', provider)
+              throw new Error(`expected tx on chain "${transfer.chain}" for hash "${transfer.hash}". Got ${tx}. This means that the rpc provider being used did not return a transaction. Please try again or use a different rpc provider.`)
+            }
+          }
+          gasUsed = tx.gasUsed.toString()
+          gasPrice = tx.effectiveGasPrice.toString()
+          const aggregatorTimestamp = aggregatorAddresses[tx.to.toLowerCase()]
+          if (aggregatorTimestamp && aggregatorTimestamp < transfer.timestamp) {
+            isAggregator = true
+          }
+
+          // we started excluding any transfers that weren't made directly to the hop contracts
+          // stating from this date
+          const isHopContractTimestamp = 1684627200
+          if (!isAggregator && transfer.timestamp > isHopContractTimestamp) {
+            const isToHopDirectly = isHopContract(tx.to)
+            isAggregator = !isToHopDirectly
+          }
         }
 
         const entry = Object.assign({ gasUsed, gasPrice, isAggregator }, transfer)

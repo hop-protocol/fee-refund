@@ -5,6 +5,7 @@ import { fetchOnChainData } from './seed/fetchOnChainData'
 import { calculateFinalAmounts, getRefundAmount } from './feeCalculations/calculateFinalAmounts'
 import { fetchAllTokenPrices, getTokenPrice } from './feeCalculations/fetchTokenPrices'
 import { getAccountHistory } from './feeCalculations/getAccountHistory'
+import { config as globalConfig } from './config'
 
 export type Config = {
   network?: string,
@@ -17,6 +18,7 @@ export type Config = {
   refundChain: string
   refundTokenSymbol: string
   maxRefundAmount: number
+  useApiForOnChainData?: boolean
 }
 
 export type SeedOptions = {
@@ -39,9 +41,10 @@ export class FeeRefund {
   tokens: string[]
   chainIds: Record<string, number>
   migrated: boolean = false
+  useApiForOnChainData: boolean = false
 
   constructor (config: Config) {
-    const { network = 'mainnet', dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, endTimestamp, refundPercentage, refundChain, refundTokenSymbol, maxRefundAmount = 100 } = config
+    const { network = 'mainnet', dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, endTimestamp, refundPercentage, refundChain, refundTokenSymbol, maxRefundAmount = 100, useApiForOnChainData } = config
     if (!startTimestamp) {
       // throw new Error('startTimestamp is required')
     }
@@ -56,6 +59,11 @@ export class FeeRefund {
     this.refundChain = refundChain
     this.refundTokenSymbol = refundTokenSymbol
     this.maxRefundAmount = maxRefundAmount
+    this.useApiForOnChainData = useApiForOnChainData
+    if (this.useApiForOnChainData) {
+      globalConfig.useApiForOnChainData = this.useApiForOnChainData
+      console.log('useApiForOnChainData:', this.useApiForOnChainData)
+    }
 
     if (!['mainnet', 'goerli'].includes(network)) {
       throw new Error(`invalid network "${network}"`)
