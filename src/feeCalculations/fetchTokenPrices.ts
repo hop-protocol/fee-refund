@@ -13,10 +13,11 @@ const coinIds: { [key: string]: string } = {
   DAI: 'dai',
   ETH: 'ethereum',
   MATIC: 'matic-network',
-  WBTC: 'wrapped-bitcoin',
   OP: 'optimism',
-  HOP: 'hop-protocol',
-  SNX: 'havven'
+  rETH: 'rocket-pool-eth',
+  sUSD: 'nusd',
+  SNX: 'havven',
+  HOP: 'hop-protocol'
 }
 
 export const fetchAllTokenPrices = async (db: Level) => {

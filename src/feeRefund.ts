@@ -74,7 +74,9 @@ export class FeeRefund {
       'arbitrum',
       'optimism',
       'polygon',
-      'gnosis'
+      'gnosis',
+      'nova',
+      'base'
     ]
 
     if (network === 'goerli') {
@@ -92,7 +94,9 @@ export class FeeRefund {
       'USDT',
       'DAI',
       'HOP',
-      'SNX'
+      'SNX',
+      'sUSD',
+      'rETH'
     ]
 
     if (network === 'goerli') {
@@ -107,7 +111,9 @@ export class FeeRefund {
       arbitrum: 42161,
       optimism: 10,
       polygon: 137,
-      gnosis: 100
+      gnosis: 100,
+      nova: 42170,
+      base: 8453
     }
 
     if (network === 'goerli') {

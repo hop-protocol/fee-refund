@@ -26,6 +26,8 @@ export interface RpcUrls {
   gnosis: string
   arbitrum: string
   optimism: string
+  nova: string
+  base: string
 }
 
 export type FinalEntries = Record<string, string>
