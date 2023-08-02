@@ -17,7 +17,9 @@ describe('Fee Refund', () => {
     polygon: process.env.POLYGON_RPC_URL!,
     gnosis: process.env.GNOSIS_RPC_URL!,
     arbitrum: process.env.ARBITRUM_RPC_URL!,
-    optimism: process.env.OPTIMISM_RPC_URL!
+    optimism: process.env.OPTIMISM_RPC_URL!,
+    nova: process.env.NOVA_RPC_URL!,
+    base: process.env.BASE_RPC_URL!
   }
   const merkleRewardsContractAddress = '0x45269F59aA76bB491D0Fc4c26F468D8E1EE26b73' // optimism
   // const merkleRewardsContractAddress = '0x9dC2d609487Be9F1dDc54b0C242847114f337501' // goerli
