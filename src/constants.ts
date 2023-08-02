@@ -52,7 +52,7 @@ export const aggregatorAddresses: Record<string, number> = {
   '0xc30141b657f4216252dc59af2e7cdb9d8792e1b0': 1641024000, // socket registry
   '0x8b14984de0ddd2e080d8679febe2f5c94b975af8': 1684627200, // socket registry
   '0xc9b6f5eeabb099bbbfb130b78249e81f70efc946': 1684627200, // socket registry
-  '0x3a23F943181408EAC424116Af7b7790c94Cb97a5': 1684627200, // socket gateway
+  '0x3a23f943181408eac424116af7b7790c94cb97a5': 1684627200, // socket gateway
   '0x362fa9d0bca5d19f743db50738345ce2b40ec99f': 1641024000, // lifi
   '0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae': 1680048000, // lifi
   '0x82e0b8cdd80af5930c4452c684e71c861148ec8a': 1680048000, // metamask
