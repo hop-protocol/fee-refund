@@ -33,6 +33,7 @@ export async function _queryFetch (url: string, query: any, variables?: any) {
   const jsonRes: any = await res.json()
 
   if (jsonRes?.errors) {
+    console.error('queryFetch error:', url, query, variables)
     throw new Error(`Erroneous TheGraph response: ${JSON.stringify(jsonRes.errors)}`)
   }
   return jsonRes.data

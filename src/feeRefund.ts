@@ -1,16 +1,19 @@
 import Level from 'level-ts'
-import { FinalEntries, RpcUrls, Transfer } from './types/interfaces'
+import { FinalEntries, Transfer } from './types/interfaces'
 import { fetchHopTransfers } from './seed/fetchHopTransfers'
 import { fetchOnChainData } from './seed/fetchOnChainData'
 import { calculateFinalAmounts, getRefundAmount } from './feeCalculations/calculateFinalAmounts'
 import { fetchAllTokenPrices, getTokenPrice } from './feeCalculations/fetchTokenPrices'
 import { getAccountHistory } from './feeCalculations/getAccountHistory'
 import { config as globalConfig } from './config'
+import { getTokenList } from './utils/getTokenList'
+import { getChainList } from './utils/getChainList'
+import { getChainIdMap } from './utils/getChainIdMap'
 
 export type Config = {
   network?: string,
   dbDir: string,
-  rpcUrls: RpcUrls,
+  rpcUrls: any,
   merkleRewardsContractAddress: string,
   startTimestamp: number,
   endTimestamp?: number,
@@ -27,7 +30,7 @@ export type SeedOptions = {
 
 export class FeeRefund {
   dbDir: string
-  rpcUrls: RpcUrls
+  rpcUrls: any
   merkleRewardsContractAddress: string
   startTimestamp: number
   endTimestamp: number | undefined
@@ -69,60 +72,9 @@ export class FeeRefund {
       throw new Error(`invalid network "${network}"`)
     }
 
-    this.chains = [
-      'mainnet',
-      'arbitrum',
-      'optimism',
-      'polygon',
-      'gnosis',
-      'nova',
-      'base'
-    ]
-
-    if (network === 'goerli') {
-      this.chains = [
-        'mainnet',
-        'optimism',
-        'polygon'
-      ]
-    }
-
-    this.tokens = [
-      'ETH',
-      'MATIC',
-      'USDC',
-      'USDT',
-      'DAI',
-      'HOP',
-      'SNX',
-      'sUSD',
-      'rETH'
-    ]
-
-    if (network === 'goerli') {
-      this.tokens = [
-        'ETH',
-        'USDC'
-      ]
-    }
-
-    this.chainIds = {
-      mainnet: 1,
-      arbitrum: 42161,
-      optimism: 10,
-      polygon: 137,
-      gnosis: 100,
-      nova: 42170,
-      base: 8453
-    }
-
-    if (network === 'goerli') {
-      this.chainIds = {
-        mainnet: 5,
-        optimism: 420,
-        polygon: 80001
-      }
-    }
+    this.chains = getChainList(network)
+    this.tokens = getTokenList(network)
+    this.chainIds = getChainIdMap(network)
   }
 
   public async seed (options: SeedOptions = {}): Promise<void> {
@@ -149,7 +101,7 @@ export class FeeRefund {
     }
 
     console.log('fetching token prices')
-    await fetchAllTokenPrices(this.db)
+    await fetchAllTokenPrices(this.db, this.network, this.refundTokenSymbol)
     console.log('done fetching token prices')
     console.log('calculating final amounts')
     const result = await calculateFinalAmounts(this.db, this.refundPercentage, this.refundTokenSymbol, this.startTimestamp, endTimestamp, this.maxRefundAmount)

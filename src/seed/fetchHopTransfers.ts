@@ -1,10 +1,7 @@
 import Level from 'level-ts'
-import getUrl from '../utils/getUrl'
+import { getSubgraphUrl } from '../utils/getSubgraphUrl'
 import queryFetch from '../utils/queryFetch'
-import {
-  PAGE_SIZE,
-  subgraphs
-} from '../constants'
+import { PAGE_SIZE } from '../constants'
 import { DbEntry, Transfer } from '../types/interfaces'
 
 export async function fetchHopTransfers (network: string, db: Level, refundChain: string, startTimestamp: number, chains: string[], chainIds: Record<string, number>, tokens: string[], endTimestamp?: number) {
@@ -27,6 +24,12 @@ export async function fetchHopTransfersDb (
 ): Promise<void> {
   let lastId = '0'
   let lastTimestamp = 0
+
+  let transferChain = chain
+  if (transferChain === 'ethereum') {
+    transferChain = 'mainnet' // backwards compatibility
+  }
+
   while (true) {
     const data: any[] = await fetchHopTransferBatch(network, token, chain, lastId, refundChainId, startTimestamp, endTimestamp)
 
@@ -63,7 +66,7 @@ export async function fetchHopTransfersDb (
   }
 
   if (lastTimestamp) {
-    const lastTimestampKey = `timestamp::${chain}`
+    const lastTimestampKey = `timestamp::${transferChain}`
     await db.put(lastTimestampKey, lastTimestamp)
   }
 }
@@ -80,6 +83,10 @@ async function fetchHopTransferBatch (
   let query : string
 
   if (chain === 'mainnet') {
+    chain = 'ethereum'
+  }
+
+  if (chain === 'ethereum') {
     query = `
       query Transfers($pageSize: Int, $lastId: ID, $token: String, $startTimestamp: Int, $endTimestamp: Int) {
         transfers: transferSentToL2S(
@@ -134,7 +141,7 @@ async function fetchHopTransferBatch (
     `
   }
 
-  const url = getUrl(network, chain, subgraphs.hopBridge)
+  const url = getSubgraphUrl(network, chain)
   const data = await queryFetch(
     url,
     query,

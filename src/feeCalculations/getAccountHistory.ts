@@ -6,6 +6,10 @@ export async function getAccountHistory (db: Level, account: string, refundToken
   const entry = await db.get(`address::${address}`)
 
   const promises = entry?.transfers?.map(async (item: any) => {
+    let chain = item.chain
+    if (chain === 'ethereum') {
+      chain = 'mainnet' // backwards compatibility
+    }
     const transfer = {
       gasUsed: item.gasUsed,
       gasPrice: item.gasPrice,
@@ -14,7 +18,7 @@ export async function getAccountHistory (db: Level, account: string, refundToken
       amount: item.amount,
       token: item.token,
       bonderFee: item.bonderFee,
-      chain: item.chain
+      chain: chain
     }
     const refundAmount = await getRefundAmount(db, transfer, refundTokenSymbol, refundPercentage, maxRefundAmount)
 

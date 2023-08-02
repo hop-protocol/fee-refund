@@ -3,25 +3,18 @@ import fetch from 'node-fetch'
 import toSeconds from '../utils/toSeconds'
 import { retry } from '../utils/retry'
 import { DateTime } from 'luxon'
+import { getCoingeckoId } from '../utils/getCoingeckoId'
+import { getTokenList } from '../utils/getTokenList'
 
 const cache :Record<string, any> = {}
 const cachedAt :Record<string, number> = {}
 
-const coinIds: { [key: string]: string } = {
-  USDC: 'usd-coin',
-  USDT: 'tether',
-  DAI: 'dai',
-  ETH: 'ethereum',
-  MATIC: 'matic-network',
-  OP: 'optimism',
-  rETH: 'rocket-pool-eth',
-  sUSD: 'nusd',
-  SNX: 'havven',
-  HOP: 'hop-protocol'
-}
-
-export const fetchAllTokenPrices = async (db: Level) => {
-  const tokens = Object.keys(coinIds)
+export const fetchAllTokenPrices = async (db: Level, network: string, refundTokenSymbol?: string) => {
+  const tokenList = new Set(getTokenList(network))
+  if (refundTokenSymbol) {
+    tokenList.add(refundTokenSymbol)
+  }
+  const tokens = Array.from(tokenList)
   for (const token of tokens) {
     try {
       const res: any = await retry(fetchTokenPrices)(token)
@@ -72,7 +65,7 @@ export const fetchAllTokenPrices = async (db: Level) => {
 }
 
 const fetchTokenPrices = async (tokenSymbol: string) => {
-  const coinId = coinIds[tokenSymbol]
+  const coinId = getCoingeckoId(tokenSymbol)
   const cached = cache[coinId]
   if (cached) {
     const timeLimitMs = 60 * 1000

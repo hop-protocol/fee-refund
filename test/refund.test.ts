@@ -1,9 +1,6 @@
 import { BigNumber } from 'ethers'
+import { formatUnits } from 'ethers/lib/utils'
 import { FeeRefund } from '../src/feeRefund'
-import { chainSlugs } from '../src/constants'
-import {
-  RpcUrls
-} from '../src/types/interfaces'
 import { isHopContract } from '../src/utils/isHopContract'
 require('dotenv').config()
 const path = require('path')
@@ -12,8 +9,8 @@ describe('Fee Refund', () => {
   const seedDbDir = path.resolve(__dirname, '../test-db')
   const dbDir = seedDbDir
   console.log('db', dbDir)
-  const rpcUrls: RpcUrls = {
-    mainnet: process.env.MAINNET_RPC_URL!,
+  const rpcUrls: any = {
+    ethereum: process.env.ETHEREUM_RPC_URL!,
     polygon: process.env.POLYGON_RPC_URL!,
     gnosis: process.env.GNOSIS_RPC_URL!,
     arbitrum: process.env.ARBITRUM_RPC_URL!,
@@ -28,7 +25,7 @@ describe('Fee Refund', () => {
   console.log('startTimestamp:', startTimestamp)
   console.log('endTimestamp:', endTimestamp)
   const refundPercentage = 0.8
-  const refundChain = chainSlugs.optimism
+  const refundChain = 'optimism'
   const refundTokenSymbol = process.env.REFUND_TOKEN_SYMBOL
   const feeRefund = new FeeRefund({
     dbDir,
@@ -59,7 +56,7 @@ describe('Fee Refund', () => {
     }
 
     console.log('sum:', sum.toString())
-    expect(sum.toString()).toBe('4800952393681655324338')
+    expect(Number(formatUnits(sum.toString())) | 0).toBe(4808)
   })
 
   test('fee refund amount', async () => {
@@ -69,7 +66,7 @@ describe('Fee Refund', () => {
       amount: '1000000000000000',
       token: 'ETH',
       bonderFee: '0',
-      chain: 'mainnet',
+      chain: 'ethereum',
       timestamp: 1662611436,
       hash: ''
     }

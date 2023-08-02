@@ -3,14 +3,14 @@ import { providers } from 'ethers'
 import {
   aggregatorAddresses
 } from '../constants'
-import { DbEntry, RpcUrls, Transfer } from '../types/interfaces'
+import { DbEntry, Transfer } from '../types/interfaces'
 import { promiseQueue } from '../utils/promiseQueue'
 import { retry } from '../utils/retry'
 import wait from 'wait'
 import { promiseQueueConcurrency, config } from '../config'
 import { isHopContract } from '../utils/isHopContract'
 
-export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestamp?: number) {
+export async function fetchOnChainData (db: Level, rpcUrls: any, endTimestamp?: number) {
   const initializedProviders = await getProviders(rpcUrls)
   const iterator = db.iterate({ all: 'address::', keys: true })
   const fns : any[] = []
@@ -36,9 +36,13 @@ export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestam
         let gasUsed : string
         let gasPrice : string
         let isAggregator = false
+        let chain = transfer.chain
         if (config.useApiForOnChainData) {
           try {
-            const url = `https://optimism-fee-refund-api.hop.exchange/v1/tx-info?chain=${transfer.chain}&hash=${transfer.hash}`
+            if (chain === 'ethereum') {
+              chain = 'mainnet' // backwards compatibility
+            }
+            const url = `https://optimism-fee-refund-api.hop.exchange/v1/tx-info?chain=${chain}&hash=${transfer.hash}`
             const response = await fetch(url)
             const json = await response.json()
             const txInfo = json?.data
@@ -55,7 +59,11 @@ export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestam
         }
 
         if (!gasUsed || !gasPrice) {
-          const provider = initializedProviders[transfer.chain]
+          let providerChain = transfer.chain
+          if (providerChain === 'mainnet') {
+            providerChain = 'ethereum'
+          }
+          const provider = initializedProviders[providerChain]
           let tx = await retry(provider.getTransactionReceipt.bind(provider))(transfer.hash)
           if (!tx) {
             // retry
@@ -107,7 +115,7 @@ export async function fetchOnChainData (db: Level, rpcUrls: RpcUrls, endTimestam
   }, { concurrency: promiseQueueConcurrency })
 }
 
-async function getProviders (rpcUrls: RpcUrls): Promise<Record<string, any>> {
+async function getProviders (rpcUrls: any): Promise<Record<string, any>> {
   const initializedProviders: Record<string, any> = {}
   for (const chain in rpcUrls) {
     initializedProviders[chain] = new providers.JsonRpcProvider(rpcUrls[chain])

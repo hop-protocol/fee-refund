@@ -20,14 +20,4 @@ export interface DbEntry {
   transfers: Transfer[]
 }
 
-export interface RpcUrls {
-  mainnet: string
-  polygon: string
-  gnosis: string
-  arbitrum: string
-  optimism: string
-  nova: string
-  base: string
-}
-
 export type FinalEntries = Record<string, string>

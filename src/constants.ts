@@ -3,56 +3,14 @@ require('dotenv').config()
 export const PAGE_SIZE = 1000
 export const ONE_DAY_SEC = 24 * 60 * 60
 
-export const chainSlugs: {[key: string]: string} = {
-  mainnet: 'mainnet',
-  arbitrum: 'arbitrum',
-  optimism: 'optimism',
-  polygon: 'polygon',
-  gnosis: 'gnosis',
-  nova: 'nova',
-  base: 'base'
-}
-
-export const nativeTokens: {[key: string]: string} = {
-  mainnet: 'ETH',
-  arbitrum: 'ETH',
-  optimism: 'ETH',
-  polygon: 'MATIC',
-  gnosis: 'DAI',
-  nova: 'ETH',
-  base: 'ETH'
-}
-
-export const tokenSymbols: {[key: string]: string} = {
-  ethereum: 'ETH',
-  matic: 'MATIC',
-  dai: 'DAI',
-  optimism: 'OP'
-}
-
-export const tokenDecimals: {[key: string]: number} = {
-  ETH: 18,
-  USDC: 6,
-  USDT: 6,
-  DAI: 18,
-  MATIC: 18,
-  WBTC: 8,
-  FRAX: 18,
-  OP: 18,
-  rETH: 18,
-  sUSD: 18,
-  SNX: 18,
-  HOP: 18
-}
-
 // the number value is the timestamp to start excluding from,
 // in order to not exclude existing data from before when the mapping address was added.
-// make sure to address keys are lowercased here.
+// make sure address keys are lowercased here because of map lookups.
 export const aggregatorAddresses: Record<string, number> = {
   '0xc30141b657f4216252dc59af2e7cdb9d8792e1b0': 1641024000, // socket registry
   '0x8b14984de0ddd2e080d8679febe2f5c94b975af8': 1684627200, // socket registry
   '0xc9b6f5eeabb099bbbfb130b78249e81f70efc946': 1684627200, // socket registry
-  '0x3a23f943181408eac424116af7b7790c94cb97a5': 1684627200, // socket gateway
+  '0x3a23f943181408eac424116af7b7790c94cb97a5': 1691107200, // socket gateway
   '0x362fa9d0bca5d19f743db50738345ce2b40ec99f': 1641024000, // lifi
   '0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae': 1680048000, // lifi
   '0x82e0b8cdd80af5930c4452c684e71c861148ec8a': 1680048000, // metamask
@@ -65,7 +23,7 @@ export const aggregatorAddresses: Record<string, number> = {
 
 // the number value is the timestamp to start checking from,
 // in order to not include data from before when the mapping address was added.
-// make sure to address keys are lowercased here.
+// make sure address keys are lowercased here because of map lookups.
 export const hopContracts: Record<string, Record<string, number>> = {
   USDC: {
     '0x3666f603cc164936c1b87e207f36beba4ac5f18a': 1684627200, // USDC ethereum l1Bridge
@@ -135,10 +93,10 @@ export const hopContracts: Record<string, Record<string, number>> = {
     '0x33ceb27b39d2bb7d2e61f7564d3df29344020417': 1684627200, // ETH arbitrum l2AmmWrapper
     '0x468f5e5a77c78275c3a6df6a59ff5dbed2559f74': 1684627200, // ETH nova l1MessengerWrapper
     '0x8796860ca1677bf5d54ce5a348fe4b779a8212f3': 1684627200, // ETH nova l2Bridge
-    '0xd6bfb71b5ad5fd378cac15c72d8652e3b8d542c4': 1684627200, // ETH nova l2AmmWrapper
-    '0x17b5ace1cd6b0d033431873826937f499eec2c95': 1684627200, // ETH base l1messengerWrapper
-    '0x3666f603cc164936c1b87e207f36beba4ac5f18a': 1684627200, // ETH base l2Bridge
-    '0x10541b07d8ad2647dc6cd67abd4c03575dade261': 1684627200 // ETH base l2AmmWrapper
+    '0xd6bfb71b5ad5fd378cac15c72d8652e3b8d542c4': 1691107200, // ETH nova l2AmmWrapper
+    '0x17b5ace1cd6b0d033431873826937f499eec2c95': 1691107200, // ETH base l1messengerWrapper
+    '0x3666f603cc164936c1b87e207f36beba4ac5f18a': 1691107200, // ETH base l2Bridge
+    '0x10541b07d8ad2647dc6cd67abd4c03575dade261': 1691107200 // ETH base l2AmmWrapper
   },
   HOP: {
     '0x914f986a44acb623a277d6bd17368171fcbe4273': 1684627200, // HOP ethereum l1Bridge
@@ -149,11 +107,11 @@ export const hopContracts: Record<string, Record<string, number>> = {
     '0x9d3a7fb18ca7f1237f977dc5572883f8b24f5638': 1684627200, // HOP optimism l1MessengerWrapper
     '0x03d7f750777ec48d39d080b020d83eb2cb4e3547': 1684627200, // HOP optimism l2Bridge
     '0x41bf5fd5d1c85f00fd1f23c77740f1a7eba6a35c': 1684627200, // HOP arbitrum l1MessengerWrapper
-    '0x25fb92e505f752f730cad0bd4fa17ece4a384266': 1684627200, // HOP arbitrum l2Bridge
-    '0xebc49b236ff1920c788ef3c0687a3a1b6fcb35f1': 1684627200, // HOP nova l1MessengerWrapper
-    '0x02d47f76523d2f059b617e4346de67482792eb83': 1684627200, // HOP nova l2Bridge
-    '0x86ed3b8ad6b721fd3a2fa73c227987fb9ad3d1ae': 1684627200, // HOP base l1MessengerWrapper
-    '0xe22d2bedb3eca35e6397e0c6d62857094aa26f52': 1684627200 // HOP base l2Bridge
+    '0x25fb92e505f752f730cad0bd4fa17ece4a384266': 1691107200, // HOP arbitrum l2Bridge
+    '0xebc49b236ff1920c788ef3c0687a3a1b6fcb35f1': 1691107200, // HOP nova l1MessengerWrapper
+    '0x02d47f76523d2f059b617e4346de67482792eb83': 1691107200, // HOP nova l2Bridge
+    '0x86ed3b8ad6b721fd3a2fa73c227987fb9ad3d1ae': 1691107200, // HOP base l1MessengerWrapper
+    '0xe22d2bedb3eca35e6397e0c6d62857094aa26f52': 1691107200 // HOP base l2Bridge
   },
   SNX: {
     '0x893246facf345c99e4235e5a7bbee7404c988b96': 1684627200, // SNX ethereum l1Bridge
@@ -176,8 +134,4 @@ export const hopContracts: Record<string, Record<string, number>> = {
     '0xc315239cfb05f1e130e7e28e603cea4c014c57f0': 1684627200, // rETH arbitrum l2Bridge
     '0x16e08c02e4b78b0a5b3a917ff5feaedd349a5a95': 1684627200 // rETH arbitrum l2AmmWrapper
   }
-}
-
-export const subgraphs: Record<string, string> = {
-  hopBridge: 'hopBridge'
 }
