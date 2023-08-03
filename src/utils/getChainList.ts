@@ -19,7 +19,7 @@ export function getChainList (network: string, timestamp?: number) {
     return chainsBeforeReadingFromCore
   }
 
-  const bridges = mainnetAddresses.bridges
+  const bridges = networks[network].bridges
   const set = new Set([])
   for (const tokenSymbol in bridges) {
     for (const chain in bridges[tokenSymbol]) {
