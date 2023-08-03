@@ -4,13 +4,12 @@ import toSeconds from '../utils/toSeconds'
 import { retry } from '../utils/retry'
 import { DateTime } from 'luxon'
 import { getCoingeckoId } from '../utils/getCoingeckoId'
-import { getTokenList } from '../utils/getTokenList'
 
 const cache :Record<string, any> = {}
 const cachedAt :Record<string, number> = {}
 
-export const fetchAllTokenPrices = async (db: Level, network: string, refundTokenSymbol?: string) => {
-  const tokenList = new Set(getTokenList(network))
+export const fetchAllTokenPrices = async (db: Level, network: string, _tokenList: string[], refundTokenSymbol?: string) => {
+  const tokenList = new Set(_tokenList)
   if (refundTokenSymbol) {
     tokenList.add(refundTokenSymbol)
   }

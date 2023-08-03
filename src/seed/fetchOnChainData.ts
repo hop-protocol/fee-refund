@@ -64,6 +64,9 @@ export async function fetchOnChainData (db: Level, rpcUrls: any, network: string
             providerChain = 'ethereum'
           }
           const provider = initializedProviders[providerChain]
+          if (!provider) {
+            throw new Error(`no provider found for transfer chain "${transfer.chain}"`)
+          }
           let tx = await retry(provider.getTransactionReceipt.bind(provider))(transfer.hash)
           if (!tx) {
             // retry
@@ -86,7 +89,7 @@ export async function fetchOnChainData (db: Level, rpcUrls: any, network: string
           // stating from this date
           const isHopContractTimestamp = 1684627200
           if (!isAggregator && transfer.timestamp > isHopContractTimestamp) {
-            const isToHopDirectly = isHopContract(network, tx.to)
+            const isToHopDirectly = isHopContract(network, tx.to, transfer.timestamp)
             isAggregator = !isToHopDirectly
           }
         }

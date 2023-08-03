@@ -72,8 +72,8 @@ export class FeeRefund {
       throw new Error(`invalid network "${network}"`)
     }
 
-    this.chains = getChainList(network)
-    this.tokens = getTokenList(network)
+    this.chains = getChainList(network, this.endTimestamp)
+    this.tokens = getTokenList(network, this.endTimestamp)
     this.chainIds = getChainIdMap(network)
   }
 
@@ -101,7 +101,7 @@ export class FeeRefund {
     }
 
     console.log('fetching token prices')
-    await fetchAllTokenPrices(this.db, this.network, this.refundTokenSymbol)
+    await fetchAllTokenPrices(this.db, this.network, this.tokens, this.refundTokenSymbol)
     console.log('done fetching token prices')
     console.log('calculating final amounts')
     const result = await calculateFinalAmounts(this.db, this.refundPercentage, this.refundTokenSymbol, this.startTimestamp, endTimestamp, this.maxRefundAmount)

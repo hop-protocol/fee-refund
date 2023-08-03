@@ -5,7 +5,20 @@ const networks = {
   goerli: goerliAddresses
 }
 
-export function getChainList (network: string) {
+// for backwards compatibility
+const chainsBeforeReadingFromCore = [
+  'ethereum',
+  'arbitrum',
+  'optimism',
+  'polygon',
+  'gnosis'
+]
+
+export function getChainList (network: string, timestamp?: number) {
+  if (timestamp && timestamp < 1690297200) {
+    return chainsBeforeReadingFromCore
+  }
+
   const bridges = mainnetAddresses.bridges
   const set = new Set([])
   for (const tokenSymbol in bridges) {
