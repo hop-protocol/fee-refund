@@ -3,7 +3,10 @@ require('dotenv').config()
 export const PAGE_SIZE = 1000
 export const ONE_DAY_SEC = 24 * 60 * 60
 
-// the number value is the timestamp to start excluding from,
+// NOTE: there's no need to update this list anymore because we're using hop contracts
+// as whitelist instead of using an aggregator blacklist.
+//
+// The number value is the timestamp to start excluding from,
 // in order to not exclude existing data from before when the mapping address was added.
 // make sure address keys are lowercased here because of map lookups.
 export const aggregatorAddresses: Record<string, number> = {
@@ -21,7 +24,10 @@ export const aggregatorAddresses: Record<string, number> = {
   '0x777777773491ff5cef6bb758f3baa9d70886909c': 1684627200 // via protocol
 }
 
-// the number value is the timestamp to start checking from,
+// NOTE: there's no need to update this list anymore because we're now reading directly
+// from the core package. This list this exists for backwards compatibility.
+//
+// The number value is the timestamp to start checking from,
 // in order to not include data from before when the mapping address was added.
 // make sure address keys are lowercased here because of map lookups.
 export const hopContracts: Record<string, Record<string, number>> = {
@@ -93,10 +99,7 @@ export const hopContracts: Record<string, Record<string, number>> = {
     '0x33ceb27b39d2bb7d2e61f7564d3df29344020417': 1684627200, // ETH arbitrum l2AmmWrapper
     '0x468f5e5a77c78275c3a6df6a59ff5dbed2559f74': 1684627200, // ETH nova l1MessengerWrapper
     '0x8796860ca1677bf5d54ce5a348fe4b779a8212f3': 1684627200, // ETH nova l2Bridge
-    '0xd6bfb71b5ad5fd378cac15c72d8652e3b8d542c4': 1691107200, // ETH nova l2AmmWrapper
-    '0x17b5ace1cd6b0d033431873826937f499eec2c95': 1691107200, // ETH base l1messengerWrapper
-    '0x3666f603cc164936c1b87e207f36beba4ac5f18a': 1691107200, // ETH base l2Bridge
-    '0x10541b07d8ad2647dc6cd67abd4c03575dade261': 1691107200 // ETH base l2AmmWrapper
+    '0xd6bfb71b5ad5fd378cac15c72d8652e3b8d542c4': 1684627200 // ETH nova l2AmmWrapper
   },
   HOP: {
     '0x914f986a44acb623a277d6bd17368171fcbe4273': 1684627200, // HOP ethereum l1Bridge
@@ -107,11 +110,7 @@ export const hopContracts: Record<string, Record<string, number>> = {
     '0x9d3a7fb18ca7f1237f977dc5572883f8b24f5638': 1684627200, // HOP optimism l1MessengerWrapper
     '0x03d7f750777ec48d39d080b020d83eb2cb4e3547': 1684627200, // HOP optimism l2Bridge
     '0x41bf5fd5d1c85f00fd1f23c77740f1a7eba6a35c': 1684627200, // HOP arbitrum l1MessengerWrapper
-    '0x25fb92e505f752f730cad0bd4fa17ece4a384266': 1691107200, // HOP arbitrum l2Bridge
-    '0xebc49b236ff1920c788ef3c0687a3a1b6fcb35f1': 1691107200, // HOP nova l1MessengerWrapper
-    '0x02d47f76523d2f059b617e4346de67482792eb83': 1691107200, // HOP nova l2Bridge
-    '0x86ed3b8ad6b721fd3a2fa73c227987fb9ad3d1ae': 1691107200, // HOP base l1MessengerWrapper
-    '0xe22d2bedb3eca35e6397e0c6d62857094aa26f52': 1691107200 // HOP base l2Bridge
+    '0x25fb92e505f752f730cad0bd4fa17ece4a384266': 1684627200 // HOP arbitrum l2Bridge
   },
   SNX: {
     '0x893246facf345c99e4235e5a7bbee7404c988b96': 1684627200, // SNX ethereum l1Bridge
