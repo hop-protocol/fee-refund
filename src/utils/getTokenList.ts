@@ -17,7 +17,7 @@ const tokensBeforeReadingFromCore = [
 ]
 
 export function getTokenList (network: string, timestamp?: number) {
-  if (timestamp && timestamp < 1690297200) {
+  if (timestamp && timestamp <= 1690297200) {
     return tokensBeforeReadingFromCore
   }
 

@@ -1,13 +1,10 @@
 import Level from 'level-ts'
 import { providers } from 'ethers'
-import {
-  aggregatorAddresses
-} from '../constants'
 import { DbEntry, Transfer } from '../types/interfaces'
 import { promiseQueue } from '../utils/promiseQueue'
 import { retry } from '../utils/retry'
 import wait from 'wait'
-import { promiseQueueConcurrency, config } from '../config'
+import { promiseQueueConcurrency, config, aggregatorAddresses } from '../config'
 import { isHopContract } from '../utils/isHopContract'
 
 export async function fetchOnChainData (db: Level, rpcUrls: any, network: string, endTimestamp?: number) {

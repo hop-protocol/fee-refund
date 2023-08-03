@@ -8,6 +8,7 @@ export async function fetchHopTransfers (network: string, db: Level, refundChain
   const refundChainId = chainIds[refundChain]
   for (const token of tokens) {
     for (const chain of chains) {
+      // console.log('fetch from the graph', chain, token)
       await fetchHopTransfersDb(network, db, token, chain, refundChainId, startTimestamp, endTimestamp)
     }
   }

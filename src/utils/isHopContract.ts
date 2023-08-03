@@ -106,7 +106,7 @@ const hopContractsBeforeReadingFromCore = new Set([
 export function isHopContract (network: string, address: string, timestamp?: number): boolean {
   address = address.toLowerCase()
 
-  if (timestamp && timestamp < 1690297200) {
+  if (timestamp && timestamp <= 1690297200) {
     return hopContractsBeforeReadingFromCore.has(address)
   }
 
