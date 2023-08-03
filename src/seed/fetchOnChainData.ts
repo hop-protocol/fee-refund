@@ -10,7 +10,7 @@ import wait from 'wait'
 import { promiseQueueConcurrency, config } from '../config'
 import { isHopContract } from '../utils/isHopContract'
 
-export async function fetchOnChainData (db: Level, rpcUrls: any, endTimestamp?: number) {
+export async function fetchOnChainData (db: Level, rpcUrls: any, network: string, endTimestamp?: number) {
   const initializedProviders = await getProviders(rpcUrls)
   const iterator = db.iterate({ all: 'address::', keys: true })
   const fns : any[] = []
@@ -86,7 +86,7 @@ export async function fetchOnChainData (db: Level, rpcUrls: any, endTimestamp?: 
           // stating from this date
           const isHopContractTimestamp = 1684627200
           if (!isAggregator && transfer.timestamp > isHopContractTimestamp) {
-            const isToHopDirectly = isHopContract(tx.to)
+            const isToHopDirectly = isHopContract(network, tx.to)
             isAggregator = !isToHopDirectly
           }
         }

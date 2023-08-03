@@ -5,6 +5,7 @@ import { getSubgraphUrl } from '../src/utils/getSubgraphUrl'
 import { getChainIdMap } from '../src/utils/getChainIdMap'
 import { getTokenDecimals } from '../src/utils/getTokenDecimals'
 import { getNativeTokenSymbol } from '../src/utils/getNativeTokenSymbol'
+import { isHopContract } from '../src/utils/isHopContract'
 
 describe('utils', () => {
   test('getTokenList', () => {
@@ -41,5 +42,13 @@ describe('utils', () => {
     expect(getNativeTokenSymbol('polygon')).toBe('MATIC')
     expect(getNativeTokenSymbol('optimism')).toBe('ETH')
     expect(getNativeTokenSymbol('gnosis')).toBe('XDAI')
+  })
+  it('isHopContract', () => {
+    expect(isHopContract('mainnet', '0xc30141b657f4216252dc59af2e7cdb9d8792e1b0')).toBe(false)
+    expect(isHopContract('mainnet', '0xc315239cFb05F1E130E7E28E603CEa4C014c57f0')).toBe(true)
+    expect(isHopContract('mainnet', '0x893246FACF345c99e4235E5A7bbEE7404c988b96')).toBe(true)
+    expect(isHopContract('mainnet', '0xd6bFB71b5Ad5fD378CaC15C72D8652E3b8D542c4')).toBe(true)
+    expect(isHopContract('mainnet', '0xe22d2bedb3eca35e6397e0c6d62857094aa26f52')).toBe(true)
+    expect(isHopContract('mainnet', '0x1111111111111111111111111111111111111111')).toBe(false)
   })
 })

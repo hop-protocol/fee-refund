@@ -1,7 +1,6 @@
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
 import { FeeRefund } from '../src/feeRefund'
-import { isHopContract } from '../src/utils/isHopContract'
 require('dotenv').config()
 const path = require('path')
 
@@ -92,14 +91,5 @@ describe('Fee Refund', () => {
     console.log(transfers)
     expect(transfers.length).toBeGreaterThan(0)
     expect(transfers[0].refund).toBeTruthy()
-  })
-})
-
-describe('isHopContract', () => {
-  it('isHopContract', () => {
-    expect(isHopContract('0xc30141b657f4216252dc59af2e7cdb9d8792e1b0')).toBe(false)
-    expect(isHopContract('0xc315239cFb05F1E130E7E28E603CEa4C014c57f0')).toBe(true)
-    expect(isHopContract('0x893246FACF345c99e4235E5A7bbEE7404c988b96')).toBe(true)
-    expect(isHopContract('0xd6bFB71b5Ad5fD378CaC15C72D8652E3b8D542c4')).toBe(true)
   })
 })

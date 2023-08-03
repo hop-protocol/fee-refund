@@ -91,7 +91,7 @@ export class FeeRefund {
     console.timeEnd('fetchHopTransfers ' + id)
     console.log('fetching on-chain data')
     console.time('fetchOnChainData ' + id)
-    await fetchOnChainData(this.db, this.rpcUrls, this.endTimestamp)
+    await fetchOnChainData(this.db, this.rpcUrls, this.network, this.endTimestamp)
     console.timeEnd('fetchOnChainData ' + id)
   }
 
