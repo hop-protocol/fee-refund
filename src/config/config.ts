@@ -23,3 +23,11 @@ export const aggregatorAddresses: Record<string, number> = {
   '0x696c91cdc3e79a74785c2cdd07ccc1bf0bc7b788': 1680048000, // chainhop
   '0x777777773491ff5cef6bb758f3baa9d70886909c': 1684627200 // via protocol
 }
+
+export const coingeckoApiKey = process.env.COINGECKO_API_KEY
+
+if (coingeckoApiKey) {
+  console.debug('COINGECKO_API_KEY set, using paid api')
+} else {
+  console.debug('COINGECKO_API_KEY not set, using free api')
+}

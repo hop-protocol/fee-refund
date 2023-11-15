@@ -1,9 +1,9 @@
 import Level from 'level-ts'
-import fetch from 'node-fetch'
 import toSeconds from '../utils/toSeconds'
 import { retry } from '../utils/retry'
 import { DateTime } from 'luxon'
 import { getCoingeckoId } from '../utils/getCoingeckoId'
+import { coingeckoApiKey } from '../config'
 
 const cache :Record<string, any> = {}
 const cachedAt :Record<string, number> = {}
@@ -75,7 +75,11 @@ const fetchTokenPrices = async (tokenSymbol: string) => {
   }
 
   const days = 365
-  const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}&interval=daily`
+  let baseUrl = 'https://api.coingecko.com/api/v3'
+  if (coingeckoApiKey) {
+    baseUrl = 'https://pro-api.coingecko.com/api/v3'
+  }
+  const url = `${baseUrl}/coins/${coinId}/market_chart?vs_currency=usd&days=${days}&interval=daily${coingeckoApiKey ? `&x_cg_pro_api_key=${coingeckoApiKey}` : ''}`
 
   const res = await fetch(url)
   const json = await res.json()
@@ -145,6 +149,6 @@ export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: n
   return price
 }
 
-const getKey = (tokenSymbol: string, timestamp: number) => {
+function getKey (tokenSymbol: string, timestamp: number) {
   return `price::${tokenSymbol}::${timestamp}`
 }
