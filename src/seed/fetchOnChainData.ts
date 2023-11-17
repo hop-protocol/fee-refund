@@ -118,7 +118,7 @@ export async function fetchOnChainData (db: Level, rpcUrls: any, network: string
 async function getProviders (rpcUrls: any): Promise<Record<string, any>> {
   const initializedProviders: Record<string, any> = {}
   for (const chain in rpcUrls) {
-    initializedProviders[chain] = new providers.JsonRpcProvider(rpcUrls[chain])
+    initializedProviders[chain] = new providers.JsonRpcProvider({ allowGzip: true, url: rpcUrls[chain] })
   }
 
   return initializedProviders
