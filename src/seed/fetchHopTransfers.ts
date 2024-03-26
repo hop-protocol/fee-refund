@@ -32,7 +32,13 @@ export async function fetchHopTransfersDb (
   }
 
   while (true) {
-    const data: any[] = await fetchHopTransferBatch(network, token, chain, lastId, refundChainId, startTimestamp, endTimestamp)
+    let data: any[] = []
+    let cctpData: any[] = []
+    const nonCctpData: any[] = await fetchHopTransferBatch(network, token, chain, lastId, refundChainId, startTimestamp, endTimestamp)
+    if (token === 'USDC') {
+      cctpData = await fetchHopTransferBatchCctp(network, token, chain, lastId, refundChainId, startTimestamp, endTimestamp)
+    }
+    data = nonCctpData.concat(cctpData)
 
     if (!data || data.length === 0) break
     lastId = data[data.length - 1].id
@@ -154,7 +160,91 @@ async function fetchHopTransferBatch (
       endTimestamp
     }
   )
-  return data ? data.transfers : []
+
+  const result = data ? data.transfers : []
+  return result
+}
+
+async function fetchHopTransferBatchCctp (
+  network: string,
+  token: string,
+  chain: string,
+  lastId: string,
+  refundChainId: number,
+  startTimestamp: number,
+  endTimestamp: number = Math.floor((Date.now() / 1000))
+) {
+  if (chain === 'mainnet') {
+    chain = 'ethereum'
+  }
+
+  if (token !== 'USDC') {
+    return []
+  }
+
+  const supportedChains = ['ethereum', 'polygon', 'optimism', 'arbitrum', 'base']
+  if (!supportedChains.includes(chain)) {
+    return []
+  }
+
+  const query = `
+    query Transfers($pageSize: Int, $lastId: ID, $token: String, $startTimestamp: Int, $endTimestamp: Int) {
+      transfers: cctptransferSents(
+        first: $pageSize,
+        where: {
+          chainId: ${refundChainId}
+          id_gt: $lastId,
+          block_: {
+            timestamp_gte: $startTimestamp,
+            timestamp_lte: $endTimestamp
+          }
+        },
+        orderBy: id,
+        orderDirection: asc
+      ) {
+        id
+        cctpNonce
+        chainId
+        recipient
+        amount
+        bonderFee
+        transaction {
+          to
+          hash
+          from
+        }
+        block {
+          timestamp
+        }
+      }
+    }
+  `
+
+  const url = getSubgraphUrl(network, chain)
+  const data = await queryFetch(
+    url,
+    query,
+    {
+      pageSize: PAGE_SIZE,
+      lastId,
+      token,
+      startTimestamp,
+      endTimestamp
+    }
+  )
+  return (data ? data.transfers : []).map((transfer: any) => {
+    return {
+      ...transfer,
+      transactionHash: transfer.transaction.hash,
+      from: transfer.transaction.from,
+      timestamp: transfer.block.timestamp,
+      deadline: 0,
+      amountOutMin: 0,
+      token,
+      amount: transfer.amount,
+      bonderFee: transfer.bonderFee
+    }
+  })
 }
 
 async function getDbEntry (db: Level, index: string): Promise<DbEntry> {
