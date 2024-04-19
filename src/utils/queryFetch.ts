@@ -1,6 +1,6 @@
 import fetch, { Response } from 'node-fetch'
-import wait from './wait'
-import { promiseTimeout } from './promiseTimeout'
+import { wait } from './wait.js'
+import { promiseTimeout } from './promiseTimeout.js'
 
 async function queryFetch (url: string, query: any, variables?: any) {
   const timeoutMs = 1 * 60 * 1000

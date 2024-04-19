@@ -1,4 +1,4 @@
-import wait from 'wait'
+import { wait } from './wait.js'
 
 const rateLimitMaxRetries = 10
 const rpcTimeoutSeconds = 300

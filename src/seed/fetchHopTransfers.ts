@@ -1,8 +1,8 @@
-import type { Level } from '../utils/Level'
-import { getSubgraphUrl } from '../utils/getSubgraphUrl'
-import queryFetch from '../utils/queryFetch'
-import { PAGE_SIZE } from '../constants'
-import { DbEntry, Transfer } from '../types/interfaces'
+import type { Level } from '../utils/Level.js'
+import { getSubgraphUrl } from '../utils/getSubgraphUrl.js'
+import queryFetch from '../utils/queryFetch.js'
+import { PAGE_SIZE } from '../constants.js'
+import { DbEntry, Transfer } from '../types/interfaces.js'
 
 export async function fetchHopTransfers (network: string, db: typeof Level, refundChain: string, startTimestamp: number, chains: string[], chainIds: Record<string, number>, tokens: string[], endTimestamp?: number) {
   const refundChainId = chainIds[refundChain]

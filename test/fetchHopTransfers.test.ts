@@ -1,6 +1,6 @@
-import { Level } from '../src/utils/Level'
+import { Level } from '../dist/utils/Level.js'
 import fs from 'fs'
-import { fetchHopTransfers } from '../src/seed/fetchHopTransfers'
+import { fetchHopTransfers } from '../dist/seed/fetchHopTransfers.js'
 import { getChainIdMap } from '../src/utils/getChainIdMap'
 import { getChainList } from '../src/utils/getChainList'
 import { getTokenList } from '../src/utils/getTokenList'

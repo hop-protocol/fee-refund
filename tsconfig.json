@@ -2,7 +2,7 @@
   "compilerOptions": {
     "lib": ["dom", "es2017", "esnext"],
     "types": ["node", "jest"],
-    "module": "commonjs",
+    "module": "nodenext",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "emitDecoratorMetadata": true,
@@ -13,7 +13,7 @@
     "target": "es2015",
     "noImplicitAny": false,
     "noUnusedLocals": false,
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "sourceMap": false,
     "outDir": "dist",
     "baseUrl": "src",

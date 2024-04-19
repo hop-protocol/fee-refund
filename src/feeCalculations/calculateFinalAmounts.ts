@@ -1,9 +1,9 @@
-import { Level } from '../utils/Level'
+import { Level } from '../utils/Level.js'
 import { BigNumber, utils } from 'ethers'
-import { DbEntry, FinalEntries, Transfer } from '../types/interfaces'
-import { getTokenPrice } from './fetchTokenPrices'
-import { getTokenDecimals } from '../utils/getTokenDecimals'
-import { getNativeTokenSymbol } from '../utils/getNativeTokenSymbol'
+import { DbEntry, FinalEntries, Transfer } from '../types/interfaces.js'
+import { getTokenPrice } from './fetchTokenPrices.js'
+import { getTokenDecimals } from '../utils/getTokenDecimals.js'
+import { getNativeTokenSymbol } from '../utils/getNativeTokenSymbol.js'
 
 const { formatUnits, parseUnits } = utils
 

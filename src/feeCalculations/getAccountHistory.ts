@@ -1,5 +1,5 @@
-import { Level } from '../utils/Level'
-import { getRefundAmount } from './calculateFinalAmounts'
+import { Level } from '../utils/Level.js'
+import { getRefundAmount } from './calculateFinalAmounts.js'
 
 export async function getAccountHistory (db: typeof Level, account: string, refundTokenSymbol: string, refundPercentage: number, maxRefundAmount: number) {
   const address = account.toLowerCase()

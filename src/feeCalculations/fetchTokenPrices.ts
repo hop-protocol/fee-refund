@@ -1,9 +1,9 @@
-import { Level } from '../utils/Level'
-import toSeconds from '../utils/toSeconds'
-import { retry } from '../utils/retry'
+import { Level } from '../utils/Level.js'
+import toSeconds from '../utils/toSeconds.js'
+import { retry } from '../utils/retry.js'
 import { DateTime } from 'luxon'
-import { getCoingeckoId } from '../utils/getCoingeckoId'
-import { coingeckoApiKey } from '../config'
+import { getCoingeckoId } from '../utils/getCoingeckoId.js'
+import { coingeckoApiKey } from '../config/index.js'
 
 const cache :Record<string, any> = {}
 const cachedAt :Record<string, number> = {}

@@ -1,4 +1,4 @@
-import { Level } from './Level'
+import { Level } from './Level.js'
 
 async function getLastTimestamp (db: typeof Level, chain: string): Promise<number> {
   const timestampKey = `timestamp::${chain}`

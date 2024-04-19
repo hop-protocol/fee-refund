@@ -1,11 +1,11 @@
-import { Level } from '../utils/Level'
+import { Level } from '../utils/Level.js'
 import { providers } from 'ethers'
-import { DbEntry, Transfer } from '../types/interfaces'
-import { promiseQueue } from '../utils/promiseQueue'
-import { retry } from '../utils/retry'
-import wait from 'wait'
-import { promiseQueueConcurrency, config, aggregatorAddresses } from '../config'
-import { isHopContract } from '../utils/isHopContract'
+import { DbEntry, Transfer } from '../types/interfaces.js'
+import { promiseQueue } from '../utils/promiseQueue.js'
+import { retry } from '../utils/retry.js'
+import { wait } from '../utils/wait.js'
+import { promiseQueueConcurrency, config, aggregatorAddresses } from '../config/index.js'
+import { isHopContract } from '../utils/isHopContract.js'
 
 export async function fetchOnChainData (db: typeof Level, rpcUrls: any, network: string, endTimestamp?: number) {
   const initializedProviders = await getProviders(rpcUrls)

@@ -1,4 +1,6 @@
-import PQueue from 'p-queue'
+import PQueue_ from 'p-queue'
+
+const PQueue = (PQueue_ as any).default || PQueue_
 
 export type Options = {
   concurrency: number
