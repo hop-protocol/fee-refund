@@ -25,6 +25,6 @@ describe('fetchHopTransfers', () => {
       count++
     }
 
-    expect(count).toBe(28)
+    expect(count).toBe(29)
   }, 10 * 60 * 1000)
 })
