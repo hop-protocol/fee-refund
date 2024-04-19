@@ -118,16 +118,20 @@ export const getTokenPrice = async (db: typeof Level, tokenSymbol: string, times
   }
 
   if (!price) {
-    try {
-      console.log('no price found for key ', key, ', getting price from 1 day ago')
-      const ts = dt.minus({ days: 1 }).toSeconds()
-      key = getKey(tokenSymbol, ts)
-      const res = await db.get(key)
-      if (res) {
-        price = res.price
+    let days = 0
+    while (!price && days < 15) {
+      days++
+      try {
+        console.log('no price found for key ', key, ', getting price from 1 day ago')
+        const ts = dt.minus({ days }).toSeconds()
+        key = getKey(tokenSymbol, ts)
+        const res = await db.get(key)
+        if (res) {
+          price = res.price
+        }
+      } catch (err) {
+        console.log(`getTokenPrice error days -${days}:`, tokenSymbol, err.message)
       }
-    } catch (err) {
-      console.log('getTokenPrice error2:', tokenSymbol, err.message)
     }
   }
 
