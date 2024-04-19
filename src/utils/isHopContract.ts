@@ -1,4 +1,6 @@
-import { mainnet as mainnetAddresses, goerli as goerliAddresses } from '@hop-protocol/core/addresses'
+import { addresses as sdkAddresses } from '@hop-protocol/sdk-core'
+
+const { mainnet: mainnetAddresses, goerli: goerliAddresses } = sdkAddresses
 
 function getHopContracts (addresses: any) {
   const keys = new Set(['l1Bridge', 'l1MessengerWrapper', 'l2Bridge', 'l2AmmWrapper'])

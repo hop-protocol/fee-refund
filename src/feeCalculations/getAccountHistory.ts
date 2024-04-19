@@ -1,7 +1,7 @@
-import Level from 'level-ts'
+import { Level } from '../utils/Level'
 import { getRefundAmount } from './calculateFinalAmounts'
 
-export async function getAccountHistory (db: Level, account: string, refundTokenSymbol: string, refundPercentage: number, maxRefundAmount: number) {
+export async function getAccountHistory (db: typeof Level, account: string, refundTokenSymbol: string, refundPercentage: number, maxRefundAmount: number) {
   const address = account.toLowerCase()
   const entry = await db.get(`address::${address}`)
 

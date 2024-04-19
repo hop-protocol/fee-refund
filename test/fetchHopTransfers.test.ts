@@ -1,4 +1,4 @@
-import Level from 'level-ts'
+import { Level } from '../src/utils/Level'
 import fs from 'fs'
 import { fetchHopTransfers } from '../src/seed/fetchHopTransfers'
 import { getChainIdMap } from '../src/utils/getChainIdMap'
@@ -6,7 +6,11 @@ import { getChainList } from '../src/utils/getChainList'
 import { getTokenList } from '../src/utils/getTokenList'
 
 describe('fetchHopTransfers', () => {
-  fs.rmdirSync('./test-db', { recursive: true })
+  try {
+    fs.rmdirSync('./test-db', { recursive: true })
+  } catch (err) {
+    // console.error(err)
+  }
   it('should fetch hop transfers', async () => {
     const network = 'mainnet'
     const db = new Level('./test-db')

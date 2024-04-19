@@ -1,8 +1,15 @@
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
 import { FeeRefund } from '../src/feeRefund'
-require('dotenv').config()
-const path = require('path')
+import path from 'path'
+import dotenv from 'dotenv'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+dotenv.config()
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 describe('Fee Refund', () => {
   const seedDbDir = path.resolve(__dirname, '../test-db')

@@ -19,9 +19,6 @@
     "baseUrl": "src",
     "resolveJsonModule": true,
     "experimentalDecorators": true,
-    "paths": {
-      "@src/*": ["*"]
-    },
     "forceConsistentCasingInFileNames": true,
     "typeRoots": ["node", "./node_modules/@types", "./@types"]
   },

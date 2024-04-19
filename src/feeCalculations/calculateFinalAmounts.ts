@@ -1,4 +1,4 @@
-import Level from 'level-ts'
+import { Level } from '../utils/Level'
 import { BigNumber, utils } from 'ethers'
 import { DbEntry, FinalEntries, Transfer } from '../types/interfaces'
 import { getTokenPrice } from './fetchTokenPrices'
@@ -8,7 +8,7 @@ import { getNativeTokenSymbol } from '../utils/getNativeTokenSymbol'
 const { formatUnits, parseUnits } = utils
 
 export async function calculateFinalAmounts (
-  db: Level,
+  db: typeof Level,
   refundPercentage: number,
   refundTokenSymbol: string,
   startTimestamp: number,
@@ -69,7 +69,7 @@ export async function calculateFinalAmounts (
   return finalEntries
 }
 
-export async function getRefundAmount (db: Level, transfer: Transfer, refundTokenSymbol: string, refundPercentage: number, maxRefundAmount: number): Promise<any> {
+export async function getRefundAmount (db: typeof Level, transfer: Transfer, refundTokenSymbol: string, refundPercentage: number, maxRefundAmount: number): Promise<any> {
   // Calculate total amount
   const {
     sourceTxCostUsd,
@@ -111,7 +111,7 @@ export async function getRefundAmount (db: Level, transfer: Transfer, refundToke
   }
 }
 
-async function getUsdCost (db: Level, transfer: Transfer): Promise<any> {
+async function getUsdCost (db: typeof Level, transfer: Transfer): Promise<any> {
   if (!transfer) {
     throw new Error('gasUsdCost: expected transfer')
   }
@@ -189,7 +189,7 @@ async function getUsdCost (db: Level, transfer: Transfer): Promise<any> {
 }
 
 async function getFeeInUsd (
-  db: Level,
+  db: typeof Level,
   costInAsset: BigNumber,
   symbol: string,
   decimals: number,

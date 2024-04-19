@@ -1,4 +1,6 @@
-import { mainnet as mainnetAddresses, goerli as goerliAddresses } from '@hop-protocol/core/addresses'
+import { addresses } from '@hop-protocol/sdk-core'
+
+const { mainnet: mainnetAddresses, goerli: goerliAddresses } = addresses
 
 const networks = {
   mainnet: mainnetAddresses,
@@ -6,7 +8,7 @@ const networks = {
 }
 
 // for backwards compatibility
-const chainsBeforeReadingFromCore = [
+const chainsBeforeReadingFromSdkCore = [
   'ethereum',
   'arbitrum',
   'optimism',
@@ -16,7 +18,7 @@ const chainsBeforeReadingFromCore = [
 
 export function getChainList (network: string, timestamp?: number) {
   if (timestamp && timestamp <= 1690297200) {
-    return chainsBeforeReadingFromCore
+    return chainsBeforeReadingFromSdkCore
   }
 
   const bridges = networks[network].bridges

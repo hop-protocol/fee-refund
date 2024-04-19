@@ -1,4 +1,4 @@
-import Level from 'level-ts'
+import { Level } from '../utils/Level'
 import toSeconds from '../utils/toSeconds'
 import { retry } from '../utils/retry'
 import { DateTime } from 'luxon'
@@ -8,7 +8,7 @@ import { coingeckoApiKey } from '../config'
 const cache :Record<string, any> = {}
 const cachedAt :Record<string, number> = {}
 
-export const fetchAllTokenPrices = async (db: Level, network: string, _tokenList: string[], refundTokenSymbol?: string) => {
+export const fetchAllTokenPrices = async (db: typeof Level, network: string, _tokenList: string[], refundTokenSymbol?: string) => {
   const tokenList = new Set(_tokenList)
   if (refundTokenSymbol) {
     tokenList.add(refundTokenSymbol)
@@ -99,7 +99,7 @@ const fetchTokenPrices = async (tokenSymbol: string) => {
   return prices
 }
 
-export const getTokenPrice = async (db: Level, tokenSymbol: string, timestamp: number): Promise<number> => {
+export const getTokenPrice = async (db: typeof Level, tokenSymbol: string, timestamp: number): Promise<number> => {
   if (!timestamp) {
     throw new Error('getTokenPrice: expected timestamp')
   }

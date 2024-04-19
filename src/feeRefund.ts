@@ -1,4 +1,4 @@
-import Level from 'level-ts'
+import { Level } from './utils/Level'
 import { FinalEntries, Transfer } from './types/interfaces'
 import { fetchHopTransfers } from './seed/fetchHopTransfers'
 import { fetchOnChainData } from './seed/fetchOnChainData'

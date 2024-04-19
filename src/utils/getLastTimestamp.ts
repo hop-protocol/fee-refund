@@ -1,6 +1,6 @@
-import Level from 'level-ts'
+import { Level } from './Level'
 
-async function getLastTimestamp (db: Level, chain: string): Promise<number> {
+async function getLastTimestamp (db: typeof Level, chain: string): Promise<number> {
   const timestampKey = `timestamp::${chain}`
   try {
     const lastTimestamp = Number(await db.get(timestampKey))

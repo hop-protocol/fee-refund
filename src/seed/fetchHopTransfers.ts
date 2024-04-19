@@ -1,10 +1,10 @@
-import Level from 'level-ts'
+import type { Level } from '../utils/Level'
 import { getSubgraphUrl } from '../utils/getSubgraphUrl'
 import queryFetch from '../utils/queryFetch'
 import { PAGE_SIZE } from '../constants'
 import { DbEntry, Transfer } from '../types/interfaces'
 
-export async function fetchHopTransfers (network: string, db: Level, refundChain: string, startTimestamp: number, chains: string[], chainIds: Record<string, number>, tokens: string[], endTimestamp?: number) {
+export async function fetchHopTransfers (network: string, db: typeof Level, refundChain: string, startTimestamp: number, chains: string[], chainIds: Record<string, number>, tokens: string[], endTimestamp?: number) {
   const refundChainId = chainIds[refundChain]
   for (const token of tokens) {
     for (const chain of chains) {
@@ -252,7 +252,7 @@ async function fetchHopTransferBatchCctp (
   }
 }
 
-async function getDbEntry (db: Level, index: string): Promise<DbEntry> {
+async function getDbEntry (db: typeof Level, index: string): Promise<DbEntry> {
   try {
     return await db.get(index)
   } catch {

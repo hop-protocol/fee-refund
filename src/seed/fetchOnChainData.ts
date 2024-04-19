@@ -1,4 +1,4 @@
-import Level from 'level-ts'
+import { Level } from '../utils/Level'
 import { providers } from 'ethers'
 import { DbEntry, Transfer } from '../types/interfaces'
 import { promiseQueue } from '../utils/promiseQueue'
@@ -7,7 +7,7 @@ import wait from 'wait'
 import { promiseQueueConcurrency, config, aggregatorAddresses } from '../config'
 import { isHopContract } from '../utils/isHopContract'
 
-export async function fetchOnChainData (db: Level, rpcUrls: any, network: string, endTimestamp?: number) {
+export async function fetchOnChainData (db: typeof Level, rpcUrls: any, network: string, endTimestamp?: number) {
   const initializedProviders = await getProviders(rpcUrls)
   const iterator = db.iterate({ all: 'address::', keys: true })
   const fns : any[] = []

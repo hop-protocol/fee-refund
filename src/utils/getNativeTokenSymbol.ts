@@ -1,4 +1,6 @@
-import { chains } from '@hop-protocol/core/metadata'
+import { metadata } from '@hop-protocol/sdk-core'
+
+const { chains } = metadata
 
 export function getNativeTokenSymbol (chain: string) {
   const nativeTokenSymbol = chains[chain]?.nativeTokenSymbol
