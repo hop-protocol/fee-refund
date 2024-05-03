@@ -1,5 +1,5 @@
-import { networks } from '@hop-protocol/sdk-core'
+import { type NetworkSlug, type ChainSlug, getChain } from '@hop-protocol/sdk'
 
 export function getDefaultRpcUrl (network: string, chain: string) {
-  return networks[network]?.[chain]?.publicRpcUrl
+  return getChain(network as NetworkSlug, chain as ChainSlug).publicRpcUrl
 }

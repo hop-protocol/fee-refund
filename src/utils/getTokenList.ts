@@ -1,6 +1,4 @@
-import { addresses } from '@hop-protocol/sdk-core'
-
-const { mainnet: mainnetAddresses, goerli: goerliAddresses } = addresses
+import { goerli as goerliAddresses, mainnet as mainnetAddresses } from '@hop-protocol/sdk/addresses'
 
 const networks = {
   mainnet: mainnetAddresses,

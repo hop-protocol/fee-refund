@@ -14,7 +14,7 @@
   "author": "Hop Team (@HopProtocol)",
   "license": "MIT",
   "dependencies": {
-    "@hop-protocol/sdk-core": "^0.0.6",
+    "@hop-protocol/sdk": "0.0.1-beta.642",
     "@types/fs-extra": "^9.0.13",
     "@types/node": "^12.20.55",
     "@types/node-fetch": "^2.0.2",

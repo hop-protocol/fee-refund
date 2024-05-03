@@ -1,12 +1,5 @@
-import { metadata } from '@hop-protocol/sdk-core'
-
-const { tokens } = metadata
+import { TokenSymbol, getTokens } from '@hop-protocol/sdk'
 
 export function getTokenDecimals (tokenSymbol: string) {
-  const decimals = tokens[tokenSymbol]?.decimals
-  if (!decimals) {
-    throw new Error(`decimals not found for token "${tokenSymbol}"`)
-  }
-
-  return decimals
+  return getTokens(tokenSymbol as TokenSymbol).decimals
 }
