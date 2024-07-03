@@ -21,16 +21,23 @@ export async function _queryFetch (url: string, query: any, variables?: any) {
   })
 
   let res: Response | undefined
-  while (!res || res.status === 504) {
+  while (!res || (res?.status === 504 || res?.status === 502)) {
+    // console.log('queryFetch:', res?.status, url)
     res = await getRes()
 
-    if (res.status === 504) {
+    if (res.status === 504 || res.status === 502) {
       console.log('backing off...')
       await wait(1e3)
     }
   }
-
-  const jsonRes: any = await res.json()
+  const text = await res.text()
+  let jsonRes: any
+  try {
+    jsonRes = JSON.parse(text)
+  } catch (err: any) {
+    console.error('queryFetch error:', url, query, variables, text)
+    throw new Error(`Failed to parse JSON response: ${err.message}`)
+  }
 
   if (jsonRes?.errors) {
     console.error('queryFetch error:', url, query, variables)

@@ -1,14 +1,10 @@
-import { goerli as goerliAddresses, mainnet as mainnetAddresses } from '@hop-protocol/sdk/addresses'
-
-const nets = {
-  mainnet: mainnetAddresses,
-  goerli: goerliAddresses
-}
+import { getNetwork, NetworkSlug } from '@hop-protocol/sdk'
 
 export function getChainIdMap (network: string) {
   const map = {}
-  for (const chain in nets[network]) {
-    map[chain] = nets[network][chain].networkId
+  const chains = getNetwork(network as NetworkSlug).chains
+  for (const chain in chains) {
+    map[chains[chain].slug] = chains[chain].chainId
   }
   return map
 }

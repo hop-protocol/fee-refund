@@ -26,5 +26,6 @@ export function getChainList (network: string, timestamp?: number) {
       set.add(chain)
     }
   }
+
   return Array.from(set)
 }

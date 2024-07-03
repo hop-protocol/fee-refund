@@ -136,7 +136,7 @@ async function getUsdCost (db: typeof Level, transfer: Transfer): Promise<any> {
   if (chain === 'mainnet') {
     chain = 'ethereum'
   }
-  let nativeTokenSymbol = getNativeTokenSymbol(chain)
+  let nativeTokenSymbol: string = getNativeTokenSymbol(chain)
   if (nativeTokenSymbol === 'XDAI') {
     nativeTokenSymbol = 'DAI' // backwards compatibility
   }

@@ -1,6 +1,6 @@
 {
   "name": "@hop-protocol/fee-refund",
-  "version": "1.1.84",
+  "version": "1.1.85",
   "description": "Fee refund logic",
   "main": "dist/index.js",
   "scripts": {
@@ -14,7 +14,7 @@
   "author": "Hop Team (@HopProtocol)",
   "license": "MIT",
   "dependencies": {
-    "@hop-protocol/sdk": "0.0.1-beta.642",
+    "@hop-protocol/sdk": "0.0.35",
     "@types/fs-extra": "^9.0.13",
     "@types/node": "^12.20.55",
     "@types/node-fetch": "^2.0.2",

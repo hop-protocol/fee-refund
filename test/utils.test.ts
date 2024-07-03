@@ -13,7 +13,7 @@ describe('utils', () => {
     console.log(tokenList)
     expect(tokenList.length > 0).toBe(true)
   })
-  test.only('getChainList', () => {
+  test('getChainList', () => {
     const list = getChainList('mainnet')
     console.log(list)
     expect(list.length > 0).toBe(true)
@@ -24,7 +24,8 @@ describe('utils', () => {
     expect(getCoingeckoId('rETH')).toBe('rocket-pool-eth')
   })
   test('getSubgraphUrl', () => {
-    expect(getSubgraphUrl('mainnet', 'polygon')).toBe('https://api.thegraph.com/subgraphs/name/hop-protocol/hop-polygon')
+    // expect(getSubgraphUrl('mainnet', 'polygon')).toBe('https://api.thegraph.com/subgraphs/name/hop-protocol/hop-polygon')
+    expect(getSubgraphUrl('mainnet', 'polygon')).toBe('https://subgraph.hop.exchange/polygon')
   })
   test('getChainIdMap', () => {
     const map = getChainIdMap('mainnet')

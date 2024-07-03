@@ -1,6 +1,6 @@
 import { BigNumber } from 'ethers'
 import { formatUnits } from 'ethers/lib/utils'
-import { FeeRefund } from '../src/feeRefund'
+import { FeeRefund } from '../dist/feeRefund'
 import path from 'path'
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
