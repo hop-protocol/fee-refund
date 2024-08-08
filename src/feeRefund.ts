@@ -9,6 +9,7 @@ import { config as globalConfig } from './config/index.js'
 import { getTokenList } from './utils/getTokenList.js'
 import { getChainList } from './utils/getChainList.js'
 import { getChainIdMap } from './utils/getChainIdMap.js'
+import { setRpcUrls } from './utils/getProvider.js'
 
 export type Config = {
   network?: string,
@@ -55,6 +56,7 @@ export class FeeRefund {
     this.network = network
     this.dbDir = dbDir + '/' + uniqueId
     this.rpcUrls = rpcUrls
+    setRpcUrls(rpcUrls)
     this.merkleRewardsContractAddress = merkleRewardsContractAddress
     this.startTimestamp = startTimestamp
     this.endTimestamp = endTimestamp

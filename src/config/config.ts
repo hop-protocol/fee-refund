@@ -1,3 +1,5 @@
+import { ChainSlug } from '@hop-protocol/sdk'
+
 export const promiseQueueConcurrency = Number(process.env.PROMISE_QUEUE_CONCURRENCY || 1000)
 export const config = {
   useApiForOnChainData: false
@@ -30,4 +32,16 @@ if (coingeckoApiKey) {
   console.debug('COINGECKO_API_KEY set, using paid api')
 } else {
   console.debug('COINGECKO_API_KEY not set, using free api')
+}
+
+export const etherscanApiKeys: Record<string, string> = {
+  [ChainSlug.Ethereum]: process.env.ETHERSCAN_API_KEY ?? '',
+  [ChainSlug.Polygon]: process.env.POLYGONSCAN_API_KEY ?? '',
+  [ChainSlug.Optimism]: process.env.OPTIMISM_API_KEY ?? '',
+  [ChainSlug.Arbitrum]: process.env.ARBITRUM_API_KEY ?? '',
+  [ChainSlug.Gnosis]: process.env.XDAI_API_KEY ?? '',
+  [ChainSlug.Nova]: process.env.NOVA_API_KEY ?? '',
+  [ChainSlug.Base]: process.env.BASE_API_KEY ?? '',
+  [ChainSlug.Linea]: process.env.LINEA_API_KEY ?? '',
+  [ChainSlug.PolygonZk]: process.env.POLYGONZK_API_KEY ?? ''
 }

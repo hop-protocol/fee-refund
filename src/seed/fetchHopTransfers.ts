@@ -1,8 +1,13 @@
 import type { Level } from '../utils/Level.js'
 import { getSubgraphUrl } from '../utils/getSubgraphUrl.js'
 import queryFetch from '../utils/queryFetch.js'
+import { getChainIdMap } from '../utils/getChainIdMap.js'
 import { PAGE_SIZE } from '../constants.js'
 import { DbEntry, Transfer } from '../types/interfaces.js'
+import { Hop as HopV2 } from '@hop-protocol/v2-sdk'
+import { getBlockNumberFromDate } from '@hop-protocol/sdk'
+import { etherscanApiKeys } from '../config/index.js'
+import { getProvider } from '../utils/getProvider.js'
 
 export async function fetchHopTransfers (network: string, db: typeof Level, refundChain: string, startTimestamp: number, chains: string[], chainIds: Record<string, number>, tokens: string[], endTimestamp?: number) {
   const refundChainId = chainIds[refundChain]
@@ -34,10 +39,23 @@ export async function fetchHopTransfersDb (
   while (true) {
     let data: any[] = []
     let cctpData: any[] = []
+    let v2Data: any[] = []
+
     const nonCctpData: any[] = await fetchHopTransferBatch(network, token, chain, lastId, refundChainId, startTimestamp, endTimestamp)
     if (token === 'USDC') {
       cctpData = await fetchHopTransferBatchCctp(network, token, chain, lastId, refundChainId, startTimestamp, endTimestamp)
     }
+
+    v2Data = await fetchHopTransfersV2({
+      network,
+      token,
+      chain,
+      lastId,
+      refundChainId,
+      startTimestamp,
+      endTimestamp
+    })
+
     data = nonCctpData.concat(cctpData).sort((a, b) => a.timestamp - b.timestamp)
 
     if (!data || data.length === 0) break
@@ -272,4 +290,84 @@ function isTransactionSeen (transfers: Transfer[], transactionHash: string): boo
   }
 
   return false
+}
+
+async function fetchHopTransfersV2 ({
+  network,
+  token,
+  chain,
+  lastId,
+  refundChainId,
+  startTimestamp,
+  endTimestamp
+}: any) {
+  if (lastId !== '0') {
+    return []
+  }
+
+  console.log('fetchHopTransfersV2', network, token, chain, lastId, refundChainId, startTimestamp, endTimestamp)
+
+  const sdk = new HopV2({
+    network
+  })
+
+  const chainId = getChainIdMap(network)[chain]
+
+  const etherscanApiKey = etherscanApiKeys[chain]
+  const provider = getProvider(chain)
+  const fromBlock = await getBlockNumberFromDate(provider, startTimestamp, etherscanApiKey)
+  const toBlock = await getBlockNumberFromDate(provider, startTimestamp, etherscanApiKey)
+
+  const events = await sdk.railsGateway.getTransferSentEvents({
+    chainId,
+    fromBlock,
+    toBlock,
+    fetchTxData: true
+  })
+
+  const transfers : any[] = []
+
+  for (const event of events) {
+    const {
+      pathId,
+      transferId,
+      to,
+      amount,
+      totalSent,
+      nonce,
+      previousTransferId,
+      attestedCheckpoint
+    } = event.decoded
+    const context = event.context
+
+    const path = await sdk.railsGateway.getPathInfo({ chainId, pathId })
+    const tokenInfo = await sdk.railsGateway.getTokenInfo({ chainId: path.chainId, address: path.token })
+
+    console.log('event', event)
+    console.log('path', path)
+    console.log('tokenInfo', tokenInfo)
+
+    if (tokenInfo.symbol !== token) {
+      continue
+    }
+    if (path.counterpartChainId?.toString() !== refundChainId?.toString()) {
+      continue
+    }
+
+    const transfer = {
+      id: transferId,
+      transactionHash: context.transactionHash,
+      from: context.from,
+      timestamp: context.blockTimestamp,
+      deadline: 0,
+      amountOutMin: 0,
+      amount,
+      token,
+      bonderFee: 0
+    }
+
+    transfers.push(transfer)
+  }
+
+  return transfers
 }
