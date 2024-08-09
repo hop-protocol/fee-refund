@@ -153,6 +153,6 @@ export const getTokenPrice = async (db: typeof Level, tokenSymbol: string, times
   return price
 }
 
-function getKey (tokenSymbol: string, timestamp: number) {
+export function getKey (tokenSymbol: string, timestamp: number) {
   return `price::${tokenSymbol}::${timestamp}`
 }
