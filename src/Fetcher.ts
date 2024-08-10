@@ -5,6 +5,10 @@ import { promiseQueueConcurrency, config, aggregatorAddresses, etherscanApiKeys,
 import { isHopContract } from './utils/isHopContract.js'
 import { getSubgraphUrl } from './utils/getSubgraphUrl.js'
 import { queryFetch } from './utils/queryFetch.js'
+import { getChainIdMap } from './utils/getChainIdMap.js'
+import { Hop as HopV2 } from '@hop-protocol/v2-sdk'
+import { getBlockNumberFromDate } from '@hop-protocol/sdk'
+import { getProvider } from './utils/getProvider.js'
 import { BigNumber, utils, providers } from 'ethers'
 import { DbEntry, FinalEntries, Transfer } from './types/interfaces.js'
 import { getTokenDecimals } from './utils/getTokenDecimals.js'
@@ -79,7 +83,20 @@ export class Fetcher {
         cctpData = await this.fetchHopTransferBatchCctp(token, chain, lastId, refundChainId, startTimestamp, endTimestamp)
       }
 
-      data = nonCctpData.concat(cctpData).sort((a, b) => a.timestamp - b.timestamp)
+      let v2Data : any[] = []
+      const v2Chains: string[] = [] // TODO
+      if (v2Chains.includes(chain)) {
+        v2Data = await this.fetchHopTransfersV2({
+          token,
+          chain,
+          lastId,
+          refundChainId,
+          startTimestamp,
+          endTimestamp
+        })
+      }
+
+      data = nonCctpData.concat(cctpData).concat(v2Data).sort((a, b) => a.timestamp - b.timestamp)
 
       if (!data || data.length === 0) break
       lastId = data[data.length - 1].id
@@ -283,6 +300,85 @@ export class Fetcher {
       console.error(`Failed to fetch cctp transfers for ${chain} ${token}`, err)
       return []
     }
+  }
+
+  private async fetchHopTransfersV2 ({
+    token,
+    chain,
+    lastId,
+    refundChainId,
+    startTimestamp,
+    endTimestamp
+  }: any) {
+    if (lastId !== '0') {
+      return []
+    }
+
+    console.log('fetchHopTransfersV2', this.network, token, chain, lastId, refundChainId, startTimestamp, endTimestamp)
+
+    const sdk = new HopV2({
+      network: this.network
+    })
+
+    const chainId = getChainIdMap(this.network)[chain]
+
+    const etherscanApiKey = etherscanApiKeys[chain]
+    const provider = getProvider(chain)
+    const fromBlock = await getBlockNumberFromDate(provider, startTimestamp, etherscanApiKey)
+    const toBlock = await getBlockNumberFromDate(provider, startTimestamp, etherscanApiKey)
+
+    const events = await sdk.railsGateway.getTransferSentEvents({
+      chainId,
+      fromBlock,
+      toBlock,
+      fetchTxData: true
+    })
+
+    const transfers : any[] = []
+
+    for (const event of events) {
+      const {
+        pathId,
+        transferId,
+        // to,
+        amount
+        // totalSent,
+        // nonce,
+        // previousTransferId,
+        // attestedCheckpoint
+      } = event.decoded
+      const context = event.context
+
+      const path = await sdk.railsGateway.getPathInfo({ chainId, pathId })
+      const tokenInfo = await sdk.railsGateway.getTokenInfo({ chainId: path.chainId, address: path.token })
+
+      console.log('event', event)
+      console.log('path', path)
+      console.log('tokenInfo', tokenInfo)
+
+      if (tokenInfo.symbol !== token) {
+        continue
+      }
+      if (path.counterpartChainId?.toString() !== refundChainId?.toString()) {
+        continue
+      }
+
+      const transfer = {
+        id: transferId,
+        transactionHash: context.transactionHash,
+        from: context.from,
+        timestamp: context.blockTimestamp,
+        deadline: 0,
+        amountOutMin: 0,
+        amount,
+        token,
+        bonderFee: 0
+      }
+
+      transfers.push(transfer)
+    }
+
+    return transfers
   }
 
   public async populateTransfersWithOnChainData (endTimestamp?: number) {
