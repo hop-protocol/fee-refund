@@ -1,15 +1,11 @@
 import { Level } from './utils/Level.js'
 import { FinalEntries, Transfer } from './types/interfaces.js'
-import { fetchHopTransfers } from './seed/fetchHopTransfers.js'
-import { fetchOnChainData } from './seed/fetchOnChainData.js'
-import { calculateFinalAmounts, getRefundAmount } from './feeCalculations/calculateFinalAmounts.js'
-import { fetchAllTokenPrices, getTokenPrice } from './feeCalculations/fetchTokenPrices.js'
-import { getAccountHistory } from './feeCalculations/getAccountHistory.js'
 import { config as globalConfig } from './config/index.js'
 import { getTokenList } from './utils/getTokenList.js'
 import { getChainList } from './utils/getChainList.js'
 import { getChainIdMap } from './utils/getChainIdMap.js'
 import { setRpcUrls } from './utils/getProvider.js'
+import { Fetcher } from './Fetcher.js'
 
 export type Config = {
   network?: string,
@@ -46,12 +42,10 @@ export class FeeRefund {
   chainIds: Record<string, number>
   migrated: boolean = false
   useApiForOnChainData: boolean = false
+  fetcher: Fetcher
 
   constructor (config: Config) {
     const { network = 'mainnet', dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, endTimestamp, refundPercentage, refundChain, refundTokenSymbol, maxRefundAmount = 100, useApiForOnChainData } = config
-    if (!startTimestamp) {
-      // throw new Error('startTimestamp is required')
-    }
     const uniqueId: string = refundChain + startTimestamp?.toString()
     this.network = network
     this.dbDir = dbDir + '/' + uniqueId
@@ -77,76 +71,71 @@ export class FeeRefund {
     this.chains = getChainList(network, this.endTimestamp)
     this.tokens = getTokenList(network, this.endTimestamp)
     this.chainIds = getChainIdMap(network)
+
+    this.fetcher = new Fetcher({
+      network: this.network,
+      db: this.db,
+      rpcUrls: this.rpcUrls,
+      refundTokenSymbol: this.refundTokenSymbol,
+      refundPercentage: this.refundPercentage,
+      maxRefundAmount: this.maxRefundAmount
+    })
   }
 
-  public async seed (options: SeedOptions = {}): Promise<void> {
+  private initializeDb (): void {
     if (!this.db) {
       this.db = new Level(this.dbDir)
     }
+  }
+
+  public async seed (options: SeedOptions = {}): Promise<void> {
+    this.initializeDb()
 
     const hopTransfersStartTime = options?.hopTransfersStartTime ?? this.startTimestamp
 
     const id = Date.now()
     console.log('fetching Hop transfers')
     console.time('fetchHopTransfers ' + id)
-    await fetchHopTransfers(this.network, this.db, this.refundChain, hopTransfersStartTime, this.chains, this.chainIds, this.tokens, this.endTimestamp)
+    await this.fetcher.fetchHopTransfers(this.refundChain, hopTransfersStartTime, this.chains, this.chainIds, this.tokens, this.endTimestamp)
     console.timeEnd('fetchHopTransfers ' + id)
     console.log('fetching on-chain data')
-    console.time('fetchOnChainData ' + id)
-    await fetchOnChainData(this.db, this.rpcUrls, this.network, this.endTimestamp)
-    console.timeEnd('fetchOnChainData ' + id)
+    console.time('populateTransfersWithOnChainData ' + id)
+    await this.fetcher.populateTransfersWithOnChainData(this.endTimestamp)
+    console.timeEnd('populateTransfersWithOnChainData ' + id)
   }
 
   public async calculateFees (endTimestamp: number): Promise<FinalEntries> {
-    if (!this.db) {
-      this.db = new Level(this.dbDir)
-    }
+    this.initializeDb()
 
     console.log('fetching token prices')
-    await fetchAllTokenPrices(this.db, this.network, this.tokens, this.refundTokenSymbol)
+    await this.fetcher.fetchPricesForAllTokens(this.tokens, this.refundTokenSymbol)
     console.log('done fetching token prices')
     console.log('calculating final amounts')
-    const result = await calculateFinalAmounts(this.db, this.refundPercentage, this.refundTokenSymbol, this.startTimestamp, endTimestamp, this.maxRefundAmount)
+    const result = await this.fetcher.calculateFinalAmounts(this.startTimestamp, endTimestamp)
     console.log('done calculating final amounts')
     return result
   }
 
   public async getRefundAmount (transfer: Transfer): Promise<any> {
-    if (!this.db) {
-      this.db = new Level(this.dbDir)
-    }
+    this.initializeDb()
 
-    return getRefundAmount(this.db, transfer, this.refundTokenSymbol, this.refundPercentage, this.maxRefundAmount)
+    return this.fetcher.getRefundAmount(transfer)
   }
 
   public async getTokenPrice (tokenSymbol: string, timestamp: number): Promise<any> {
-    if (!this.db) {
-      this.db = new Level(this.dbDir)
-    }
+    this.initializeDb()
 
-    return getTokenPrice(this.db, tokenSymbol, timestamp)
+    return this.fetcher.getTokenPrice(tokenSymbol, timestamp)
   }
 
   public async getAccountHistory (account: string): Promise<any> {
-    if (!this.db) {
-      this.db = new Level(this.dbDir)
-    }
+    this.initializeDb()
 
-    return getAccountHistory(this.db, account, this.refundTokenSymbol, this.refundPercentage, this.maxRefundAmount)
+    return this.fetcher.getAccountHistory(account)
   }
 
-  public getDb () {
-    if (!this.db) {
-      this.db = new Level(this.dbDir)
-    }
-
-    return this.db
-  }
-
-  async getTxInfo (chain: string, hash: string) {
-    if (!this.db) {
-      this.db = new Level(this.dbDir)
-    }
+  async getTxInfo (chain: string, hash: string): Promise<any> {
+    this.initializeDb()
 
     const key = `tx::${chain}:${hash}`
     try {
@@ -160,17 +149,15 @@ export class FeeRefund {
     return null
   }
 
-  async migrate () {
-    if (!this.db) {
-      this.db = new Level(this.dbDir)
-    }
+  private async migrate (): Promise<void> {
+    this.initializeDb()
 
     if (this.migrated) {
       return
     }
 
     const iterator = this.db.iterate({ all: 'address::', keys: true })
-    for await (const { key, value } of iterator) {
+    for await (const { value } of iterator) {
       if (value) {
         if (Array.isArray(value.transfers)) {
           for (const transfer of value.transfers) {

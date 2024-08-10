@@ -1,6 +1,6 @@
 import { goerli as goerliAddresses, mainnet as mainnetAddresses } from '@hop-protocol/sdk/addresses'
 
-function getHopContracts (addresses: any) {
+function getHopContracts (addresses: any): Set<string> {
   const keys = new Set(['l1Bridge', 'l1MessengerWrapper', 'l2Bridge', 'l2AmmWrapper'])
   const set = new Set([])
   for (const tokenSymbol in addresses) {
@@ -15,7 +15,7 @@ function getHopContracts (addresses: any) {
   return set
 }
 
-const hopContracts :any = {
+const hopContracts: any = {
   mainnet: getHopContracts(mainnetAddresses.bridges),
   goerli: getHopContracts(goerliAddresses.bridges)
 }

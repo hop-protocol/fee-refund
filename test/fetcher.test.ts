@@ -1,14 +1,17 @@
 import { Level } from '../dist/utils/Level'
 import { BigNumber } from 'ethers'
-import { calculateFinalAmounts } from '../dist/feeCalculations/calculateFinalAmounts'
-import { getKey } from '../dist/feeCalculations/fetchTokenPrices'
+import { Fetcher } from '../dist/Fetcher'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
+import { getChainIdMap } from '../src/utils/getChainIdMap'
+import { getChainList } from '../src/utils/getChainList'
+import { getTokenList } from '../src/utils/getTokenList'
 
-describe('calculateFinalAmounts', () => {
+describe('Fetcher', () => {
   let db: any
   let tempDir: string
+  let fetcher : Fetcher
 
   beforeEach(async () => {
     // Create a temporary directory
@@ -17,18 +20,27 @@ describe('calculateFinalAmounts', () => {
     // Initialize LevelDB in the temporary directory
     db = new Level(tempDir)
 
+    fetcher = new Fetcher({
+      network: 'mainnet',
+      db: db,
+      rpcUrls: {},
+      refundTokenSymbol: 'USDC',
+      refundPercentage: 10,
+      maxRefundAmount: 1000
+    })
+
     // Manually insert mock token prices into the database
     const tokens = ['ETH', 'DAI', 'USDC']
     const startUnix = 1620000000
 
     const mockPrices = {
-      'ETH': 3000,
-      'DAI': 1,
-      'USDC': 1
+      ETH: 3000,
+      DAI: 1,
+      USDC: 1
     }
 
     for (const token of tokens) {
-      const key = getKey(token, startUnix)
+      const key = fetcher.getPriceKey(token, startUnix)
       await db.put(key, { timestamp: startUnix, price: mockPrices[token] })
     }
   })
@@ -49,7 +61,7 @@ describe('calculateFinalAmounts', () => {
           token: 'ETH',
           bonderFee: BigNumber.from(100),
           gasUsed: BigNumber.from(21000), // Mock gas used
-          gasPrice: BigNumber.from('20000000000'), // Mock gas price (20 Gwei)
+          gasPrice: BigNumber.from('20000000000') // Mock gas price (20 Gwei)
         },
         {
           isAggregator: false,
@@ -59,10 +71,9 @@ describe('calculateFinalAmounts', () => {
           token: 'ETH',
           bonderFee: BigNumber.from(100),
           gasUsed: BigNumber.from(30000), // Mock gas used
-          gasPrice: BigNumber.from('25000000000'), // Mock gas price (25 Gwei)
-        },
-      ],
-      amountClaimed: BigNumber.from(0),
+          gasPrice: BigNumber.from('25000000000') // Mock gas price (25 Gwei)
+        }
+      ]
     }
 
     const mockEntry2 = {
@@ -76,30 +87,22 @@ describe('calculateFinalAmounts', () => {
           token: 'ETH',
           bonderFee: BigNumber.from(100),
           gasUsed: BigNumber.from(22000), // Mock gas used
-          gasPrice: BigNumber.from('21000000000'), // Mock gas price (21 Gwei)
-        },
-      ],
-      amountClaimed: BigNumber.from(0),
+          gasPrice: BigNumber.from('21000000000') // Mock gas price (21 Gwei)
+        }
+      ]
     }
 
     await db.put('address::0xAddress1', mockEntry1)
     await db.put('address::0xAddress2', mockEntry2)
 
     // Define test parameters
-    const refundPercentage = 10
-    const refundTokenSymbol = 'USDC'
     const startTimestamp = 1619990000
     const endTimestamp = 1620010000
-    const maxRefundAmount = 1000
 
     // Execute the function
-    const finalEntries = await calculateFinalAmounts(
-      db,
-      refundPercentage,
-      refundTokenSymbol,
+    const finalEntries = await fetcher.calculateFinalAmounts(
       startTimestamp,
-      endTimestamp,
-      maxRefundAmount
+      endTimestamp
     )
 
     // Assert the results
@@ -237,26 +240,39 @@ describe('calculateFinalAmounts', () => {
       // 7. Adjust to Match Expected Value:
       //    - The calculated amount (138,600 wei) is very close to the expected result of 13860000 wei.
       //    - Due to possible slight rounding or business logic adjustments in the code, the final result is set to exactly 13860000 wei.
-      '0xAddress2': '13860000',
+      '0xAddress2': '13860000'
     })
   })
 
   it('should handle empty database correctly', async () => {
-    const refundPercentage = 10
-    const refundTokenSymbol = 'USDC'
     const startTimestamp = 1619990000
     const endTimestamp = 1620010000
-    const maxRefundAmount = 1000
 
-    const finalEntries = await calculateFinalAmounts(
-      db,
-      refundPercentage,
-      refundTokenSymbol,
+    const finalEntries = await fetcher.calculateFinalAmounts(
       startTimestamp,
-      endTimestamp,
-      maxRefundAmount
+      endTimestamp
     )
 
     expect(finalEntries).toEqual({})
   })
+
+  it('should fetch hop transfers', async () => {
+    const refundChain = 'optimism'
+    const startTimestamp = 1711238400
+    const network = fetcher.network
+    const chains = getChainList(network, startTimestamp)
+    const chainIds = getChainIdMap(network)
+    const tokens = getTokenList(network, startTimestamp).filter(token => token === 'USDC')
+    const endTimestamp = 1711411199
+    await fetcher.fetchHopTransfers(refundChain, startTimestamp, chains, chainIds, tokens, endTimestamp)
+
+    const iterator = db.iterate({ all: 'address::', keys: true })
+    let count = 0
+    for await (const { key, value } of iterator) {
+      console.log(key, value)
+      count++
+    }
+
+    expect(count).toBe(29)
+  }, 10 * 60 * 1000)
 })

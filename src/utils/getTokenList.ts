@@ -16,7 +16,7 @@ const tokensBeforeReadingFromCore = [
   'SNX'
 ]
 
-export function getTokenList (network: string, timestamp?: number) {
+export function getTokenList (network: string, timestamp?: number): string[] {
   if (timestamp && timestamp <= 1690297200) {
     return tokensBeforeReadingFromCore
   }

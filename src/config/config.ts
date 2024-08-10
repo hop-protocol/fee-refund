@@ -1,4 +1,7 @@
+import dotenv from 'dotenv'
 import { ChainSlug } from '@hop-protocol/sdk'
+
+dotenv.config()
 
 export const promiseQueueConcurrency = Number(process.env.PROMISE_QUEUE_CONCURRENCY || 1000)
 export const config = {

@@ -1,6 +1,8 @@
 import { getNetwork, NetworkSlug } from '@hop-protocol/sdk'
 
-export function getChainIdMap (network: string) {
+type ChainIdMap = Record<string, number>
+
+export function getChainIdMap (network: string): ChainIdMap {
   const map = {}
   const chains = getNetwork(network as NetworkSlug).chains
   for (const chain in chains) {

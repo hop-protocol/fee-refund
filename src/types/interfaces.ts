@@ -16,7 +16,6 @@ export interface Transfer {
 
 export interface DbEntry {
   address: string
-  amountClaimed: string
   transfers: Transfer[]
 }
 

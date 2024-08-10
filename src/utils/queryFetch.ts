@@ -2,12 +2,12 @@ import fetch, { Response } from 'node-fetch'
 import { wait } from './wait.js'
 import { promiseTimeout } from './promiseTimeout.js'
 
-async function queryFetch (url: string, query: any, variables?: any) {
+export async function queryFetch (url: string, query: any, variables?: any) {
   const timeoutMs = 1 * 60 * 1000
   return promiseTimeout(_queryFetch(url, query, variables), timeoutMs)
 }
 
-export async function _queryFetch (url: string, query: any, variables?: any) {
+async function _queryFetch (url: string, query: any, variables?: any) {
   const getRes = () => fetch(url, {
     method: 'POST',
     headers: {
@@ -45,5 +45,3 @@ export async function _queryFetch (url: string, query: any, variables?: any) {
   }
   return jsonRes.data
 }
-
-export default queryFetch
