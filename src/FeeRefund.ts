@@ -149,7 +149,7 @@ export class FeeRefund {
     return null
   }
 
-  private async migrate (): Promise<void> {
+  async migrate (): Promise<void> {
     this.initializeDb()
 
     if (this.migrated) {
