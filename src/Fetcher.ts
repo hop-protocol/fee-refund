@@ -111,6 +111,97 @@ export class Fetcher {
         await this.db.put(key, dbEntry)
       }
     }
+
+    const v2Enabled = config.v2Enabled
+    if (v2Enabled) {
+      let lastTimestamp = 0
+      while (true) {
+        const items :any[] = await this.fetchV2HopTransfersBatch(token, refundChainId, startTimestamp, endTimestamp, lastTimestamp)
+
+        if (!items || items.length === 0) break
+        lastTimestamp = items[items.length - 1].timestamp
+
+        for (const entry of items) {
+          const address = entry.from
+          const key = this.getAddressKey(address)
+          const dbEntry: DbEntry = await this.getDbEntry(key)
+          const isSeen = this.isTransactionSeenInDb(dbEntry.transfers, entry.transactionHash)
+          if (isSeen) continue
+
+          dbEntry.address = address
+          dbEntry.transfers.push({
+            hash: entry.transactionHash,
+            timestamp: Number(entry.timestamp),
+            amount: entry.amount,
+            token: entry.token,
+            bonderFee: entry.bonderFee || 0,
+            deadline: Number(entry.deadline || 0),
+            amountOutMin: entry.amountOutMin || 0,
+            chain
+          })
+
+          if (lastTimestamp < entry.timestamp) {
+            lastTimestamp = entry.timestamp
+          }
+          await this.db.put(key, dbEntry)
+        }
+      }
+    }
+  }
+
+  async fetchV2HopTransfersBatch (
+    tokenSymbol: string,
+    refundChainId: number,
+    startTimestamp: number,
+    endTimestamp: number = Math.floor((Date.now() / 1000)),
+    lastTimestamp: number = 0
+  ): Promise<any[]> {
+    const explorerApiBaseUrl = 'http://localhost:8000'
+    // const explorerApiBaseUrl = 'https://v2-explorer-api-sepolia.hop.exchange'
+
+    if (lastTimestamp && lastTimestamp > 0) {
+      startTimestamp = lastTimestamp
+    }
+
+    const queryParams = new URLSearchParams()
+    queryParams.set('startTimestamp', startTimestamp.toString())
+    queryParams.set('endTimestamp', endTimestamp.toString())
+    queryParams.set('token', tokenSymbol)
+    queryParams.set('destinationChainId', refundChainId.toString())
+
+    const queryParamsString = queryParams.toString()
+    const url = `${explorerApiBaseUrl}/v1/explorer?${queryParamsString}`
+    const res = await fetch(url)
+
+    const json = await res.json()
+    // console.log(JSON.stringify(json, null, 2))
+
+    if (!json || !Array.isArray(json.events)) {
+      throw new Error('fetchV2HopTransfersInBatches: expected json data')
+    }
+
+    const items = json.events
+      .map((item: any) => {
+        return {
+          id: item.transferId,
+          hash: item.context.transactionHash,
+          timestamp: Number(item.context.blockTimestamp),
+          amount: item.amount,
+          token: item.token.symbol,
+          bonderFee: item.maxBonderFee || 0,
+          deadline: Number(item.deadline || 0),
+          amountOutMin: item.amountOutMin || 0,
+          chain: item.context.chainSlug,
+          chainId: item.context.chainId,
+          destinationChainId: item.toChainId
+        }
+      })
+      .filter((item: any) => {
+        console.log('item:', item)
+        return item.token === tokenSymbol && item.destinationChainId?.toString() === refundChainId?.toString()
+      })
+
+    return items
   }
 
   private async fetchHopTransferForChainBatch (

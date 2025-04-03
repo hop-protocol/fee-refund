@@ -26,7 +26,7 @@ describe('Fetcher', () => {
       rpcUrls: {},
       refundTokenSymbol: 'USDC',
       refundPercentage: 10,
-      maxRefundAmount: 1000
+      maxRefundAmount: 1000,
     })
 
     // Manually insert mock token prices into the database
@@ -275,4 +275,17 @@ describe('Fetcher', () => {
 
     expect(count).toBe(29)
   }, 10 * 60 * 1000)
+
+  it.skip('should fetch hop transfers batch', async () => {
+    const refundChainId = 11155420
+    // const refundChainId = 84532
+    // const refundChainId = 11155111
+    const startTimestamp = 1743009348
+    const endTimestamp = 1743666121
+    const lastTimestamp = 0
+    const token = 'USDC'
+    const items = await fetcher.fetchV2HopTransfersBatch(token, refundChainId, startTimestamp, endTimestamp, lastTimestamp)
+    expect(items).toBeDefined()
+    console.log(items.length)
+  })
 })

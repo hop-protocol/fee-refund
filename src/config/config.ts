@@ -4,8 +4,10 @@ import { ChainSlug } from '@hop-protocol/sdk'
 dotenv.config()
 
 export const promiseQueueConcurrency = Number(process.env.PROMISE_QUEUE_CONCURRENCY || 1000)
+const v2Enabled = process.env.V2_ENABLED === 'true' || process.env.V2_ENABLED === '1'
 export const config = {
-  useApiForOnChainData: false
+  useApiForOnChainData: false,
+  v2Enabled
 }
 
 // NOTE: there's no need to update this list anymore because we're using hop contracts

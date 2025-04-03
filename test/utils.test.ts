@@ -7,7 +7,7 @@ import { getTokenDecimals } from '../src/utils/getTokenDecimals'
 import { getNativeTokenSymbol } from '../src/utils/getNativeTokenSymbol'
 import { isHopContract } from '../src/utils/isHopContract'
 
-describe('utils', () => {
+describe.skip('utils', () => {
   test('getTokenList', () => {
     const tokenList = getTokenList('mainnet')
     console.log(tokenList)

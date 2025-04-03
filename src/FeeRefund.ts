@@ -19,6 +19,7 @@ export type Config = {
   refundTokenSymbol: string
   maxRefundAmount: number
   useApiForOnChainData?: boolean
+  v2Enabled?: boolean
 }
 
 export type SeedOptions = {
@@ -42,10 +43,11 @@ export class FeeRefund {
   chainIds: Record<string, number>
   migrated: boolean = false
   useApiForOnChainData: boolean = false
+  v2Enabled: boolean = false
   fetcher: Fetcher
 
   constructor (config: Config) {
-    const { network = 'mainnet', dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, endTimestamp, refundPercentage, refundChain, refundTokenSymbol, maxRefundAmount = 100, useApiForOnChainData } = config
+    const { network = 'mainnet', dbDir, rpcUrls, merkleRewardsContractAddress, startTimestamp, endTimestamp, refundPercentage, refundChain, refundTokenSymbol, maxRefundAmount = 100, useApiForOnChainData, v2Enabled } = config
     const uniqueId: string = refundChain + startTimestamp?.toString()
     this.network = network
     this.dbDir = dbDir + '/' + uniqueId
@@ -62,6 +64,11 @@ export class FeeRefund {
     if (this.useApiForOnChainData) {
       globalConfig.useApiForOnChainData = this.useApiForOnChainData
       console.log('useApiForOnChainData:', this.useApiForOnChainData)
+    }
+    this.v2Enabled = v2Enabled
+    if (this.v2Enabled) {
+      globalConfig.v2Enabled = this.v2Enabled
+      console.log('v2Enabled:', this.v2Enabled)
     }
 
     if (!['mainnet', 'goerli'].includes(network)) {
